@@ -1,0 +1,6 @@
+#ifndef FLEX_LIBRARY_H
+#define FLEX_LIBRARY_H
+
+ #include "flex_include/*.hpp"
+
+ #endif

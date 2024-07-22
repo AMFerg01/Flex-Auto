@@ -1,0 +1,8 @@
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "flex"
+version = "0.0.1"
+requires-python = ">3.8"
