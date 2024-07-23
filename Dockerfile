@@ -40,7 +40,6 @@ RUN ln -s /usr/bin/python3.11 /usr/bin/python
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 RUN mkdir -p /home/app_user/app
-COPY requirements.txt /home/app_user/app/
 
 WORKDIR /home/app_user/app/
 
