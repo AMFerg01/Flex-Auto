@@ -4,6 +4,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+
+namespace py = pybind11;
+
 void test_gbm(void) {
 
 	// Geometric Brownian Model Parameters
@@ -58,10 +61,66 @@ void test_gbm(void) {
 	observation_dates
 	);
 
+	// pyAthenaAutocallable athena_autocallable = pyAthenaAutocallable(
+	// coupon_barrier,
+ 	// autocall_barrier,
+    // exit_barrier,
+    // kill_barrier,
+	// autocall_value,
+	// coupon_value,
+	// kill_value,
+    // maturity,
+	// observation_dates
+	// );
+
 	athena_autocallable.price_path(gbm); 
+	std::cout << athena_autocallable.autocall_value << std::endl;
 }
+
+class pyAthenaAutocallable : public AthenaAutocallable {
+public:
+	using AthenaAutocallable::AthenaAutocallable;
+};
+
+class pyGBM : public GeometricBrownianModel {
+public:
+	using GeometricBrownianModel::GeometricBrownianModel;
+};
+
+
 
 PYBIND11_MODULE(flex, m) {
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
     m.def("run", &test_gbm, "Test");
+	py::class_<pyAthenaAutocallable>(m, "pyAthenaAutocallable").def(py::init<float ,
+																			float ,
+																			float ,
+																			float ,
+																			float ,
+																			float ,
+																			float ,
+																			float ,
+																			std::vector<float> &>())
+																.def("price_path", &pyAthenaAutocallable::price_path)
+																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks)
+																.def("check_barrier_ordering", &pyAthenaAutocallable::check_barrier_ordering)
+																.def("check_terminations", &pyAthenaAutocallable::check_terminations);
+	
+	py::class_<pyGBM>(m, "pyGBM").def(py::init<float,
+												float,
+												float,
+												float,
+												float,
+												uint16_t,
+												std::vector<float> &,
+												std::vector<float> &,
+												std::vector<float> &>())
+									.def("print", &pyGBM::print)
+									.def("print_path", &pyGBM::print_path)
+									.def("print_stocks", &pyGBM::print_stocks)
+									.def("generate_path", &pyGBM::generate_path)
+									.def("compute_spot_prices", &pyGBM::compute_spot_prices);
+
+	// py::class_<pyAthenaAutocallable>(m, "pricepath").def("price_path", &pyAthenaAutocallable::price_path);
+	// py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def("check_terminations", &check_terminations);
 }
