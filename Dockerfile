@@ -35,6 +35,8 @@ RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
 RUN ln -s /usr/bin/pip3.11 /usr/bin/pip3
 RUN ln -s /usr/bin/python3.11 /usr/bin/python
 
+RUN pip3 install pybind11[global]
+
 # Set Python 3.11 as the default
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
