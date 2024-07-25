@@ -10,7 +10,6 @@ RUN $APT_INSTALL curl software-properties-common vim
 
 # Install C++ tools
 RUN $APT_INSTALL build-essential=12.9ubuntu3
-RUN $APT_INSTALL gdb=12.1-0ubuntu1~22.04
 RUN $APT_INSTALL cppcheck=2.7-1
 RUN $APT_INSTALL cmake=3.22.1-1ubuntu1.22.04.1
 RUN $APT_INSTALL apt-transport-https curl gnupg -y
