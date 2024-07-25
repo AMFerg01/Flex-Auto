@@ -1,7 +1,7 @@
 version: '3.8' 
 
 services:
-    ubuntu_cxx_shell_2204:
+    shell:
         image: ubuntu_cxx_shell_2204 
         container_name: ubuntu_cxx_shell_2204
         build: 
