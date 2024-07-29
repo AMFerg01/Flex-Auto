@@ -92,21 +92,24 @@ public:
 PYBIND11_MODULE(flex, m) {
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
     m.def("run", &test_gbm, "Test");
-	py::class_<pyAthenaAutocallable>(m, "pyAthenaAutocallable").def(py::init<float ,
-																			float ,
-																			float ,
-																			float ,
-																			float ,
-																			float ,
-																			float ,
-																			float ,
+	py::class_<pyAthenaAutocallable>(m, "pyAthenaAutocallable").def(py::init<float,
+																			float,
+																			float,
+																			float,
+																			float,
+																			float,
+																			float,
+																			float,
 																			std::vector<float> &>())
 																.def("price_path", &pyAthenaAutocallable::price_path)
 																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks)
 																.def("check_barrier_ordering", &pyAthenaAutocallable::check_barrier_ordering)
 																.def("check_terminations", &pyAthenaAutocallable::check_terminations);
 	
-	py::class_<pyGBM>(m, "pyGBM").def(py::init<float,
+	py::class_<AthenaResult>(m, "AthenaResult").def("getPrice", [](AthenaResult a) {return a.price;});
+
+	using base = GeometricBrownianModel;
+	py::class_<base>(m, "pyGBM").def(py::init<float,
 												float,
 												float,
 												float,

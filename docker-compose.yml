@@ -1,0 +1,15 @@
+version: '3.8' 
+
+services:
+    shell:
+        image: ubuntu_cxx_shell_2204 
+        container_name: ubuntu_cxx_shell_2204
+        build: 
+            context: .
+            target: ubuntu_cxx_shell_2204
+            dockerfile: ./Dockerfile
+        tty: true
+        stdin_open: true
+        command: sh
+        volumes:
+          - ./:/home/app_user/app/

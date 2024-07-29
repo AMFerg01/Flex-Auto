@@ -83,7 +83,7 @@ public:
     ~AthenaAutocallable();
 
     // TODO(remove this later.)
-    void price_path(GeometricBrownianModel &gbm);
+    AthenaResult price_path(GeometricBrownianModel &gbm);
 
     AthenaResult price_path_d(GeometricBrownianModel &gbm);
 

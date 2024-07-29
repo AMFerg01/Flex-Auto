@@ -167,7 +167,7 @@ void AthenaAutocallable::check_barrier_ordering(void)
         - broke the `exit_barrier`, option autocalls with level, coupons, and the gains of the underlying.
 
 */
-void AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
+AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
 {
   // AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel & gbm){
 
@@ -243,6 +243,16 @@ void AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
                                              stock_normalized.at(observed_time_index.at(i)),
                                              gbm,
                                              false);
+    try
+    {
+      std::cout << "success" << std::endl;
+      return result;
+    }
+    catch(const std::exception& e)
+    {
+      std::cerr << e.what() << '\n';
+    }
+    
   }
   // for i, index in enumerate(obs_time_index):
 
@@ -272,6 +282,8 @@ void AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
   //     gbm=gbm,
   //     maturity=True,
   // )
+   //     raise NotImplementedError("User should not be here")
+        return check_terminations(0,0,0.0,gbm,0);
 }
 
 AthenaResult AthenaAutocallable::check_terminations(
@@ -295,7 +307,7 @@ AthenaResult AthenaAutocallable::check_terminations(
       gbm.stocks.at(0),
       gbm.stocks,
       gbm,
-      INFINITY,
+      1,
       std::string("error"),
       index};
 
