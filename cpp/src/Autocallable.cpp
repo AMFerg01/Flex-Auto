@@ -234,26 +234,33 @@ AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
   }
 
   // Perform Checks
-
+  AthenaResult result = check_terminations(0,
+                                             observed_time_index.at(0),
+                                             stock_normalized.at(observed_time_index.at(0)),
+                                             gbm,
+                                             false);
   for (auto i = 0; i < observed_time_index.size(); i++)
   {
 
-    AthenaResult result = check_terminations(i,
-                                             observed_time_index.at(i),
-                                             stock_normalized.at(observed_time_index.at(i)),
-                                             gbm,
-                                             false);
-    try
-    {
-      std::cout << "success" << std::endl;
-      return result;
-    }
-    catch(const std::exception& e)
-    {
-      std::cerr << e.what() << '\n';
-    }
+    result = check_terminations(i,
+                                observed_time_index.at(i),
+                                stock_normalized.at(observed_time_index.at(i)),
+                                gbm,
+                                false);
     
+    std::cout << result.price << std::endl;
   }
+  try
+  {
+    return result;
+  }
+  catch(const std::exception& e)
+  {
+    std::cout << "test" << std::endl;
+    std::cerr << e.what() << '\n';
+  }
+  
+  
   // for i, index in enumerate(obs_time_index):
 
   //     termination_value: Optional[AthenaResult] = self.check_terminations(
@@ -283,7 +290,7 @@ AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
   //     maturity=True,
   // )
    //     raise NotImplementedError("User should not be here")
-        return check_terminations(0,0,0.0,gbm,0);
+  return check_terminations(0,0,0.0,gbm,0);
 }
 
 AthenaResult AthenaAutocallable::check_terminations(
@@ -307,7 +314,7 @@ AthenaResult AthenaAutocallable::check_terminations(
       gbm.stocks.at(0),
       gbm.stocks,
       gbm,
-      1,
+      0,
       std::string("error"),
       index};
 

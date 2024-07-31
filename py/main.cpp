@@ -88,7 +88,6 @@ public:
 };
 
 
-
 PYBIND11_MODULE(flex, m) {
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
     m.def("run", &test_gbm, "Test");
@@ -106,7 +105,18 @@ PYBIND11_MODULE(flex, m) {
 																.def("check_barrier_ordering", &pyAthenaAutocallable::check_barrier_ordering)
 																.def("check_terminations", &pyAthenaAutocallable::check_terminations);
 	
-	py::class_<AthenaResult>(m, "AthenaResult").def("getPrice", [](AthenaResult a) {return a.price;});
+	py::class_<AthenaResult>(m, "AthenaResult").def("getPrice", [](AthenaResult a) {return a.price;})
+												.def("getTermStatus", [](AthenaResult a) {return a.termination_status;})
+												.def("getTermIndex", [](AthenaResult a) {return a.terminating_index;})
+												.def("getAutocallBarrier", [](AthenaResult a) {return a.autocall_barrier;})
+												.def("getExitBarrier", [](AthenaResult a) {return a.exit_barrier;})
+												.def("getKillBarrier", [](AthenaResult a) {return a.kill_barrier;})
+												.def("getUnderlyingPath", [](AthenaResult a) {return a.underlying_path;})
+												.def("getObsDates", [](AthenaResult a) {return a.observation_dates;})
+												.def("getInceptionSpot", [](AthenaResult a) {return a.inception_spot;})
+												.def("getGbmMaturity", [](AthenaResult a) {return a.gbm.maturity;})
+												.def("getNumSteps", [](AthenaResult a) {return a.gbm.number_of_steps;})
+												.def("getMaturity", [](AthenaResult a) {return a.maturity;});
 
 	using base = GeometricBrownianModel;
 	py::class_<base>(m, "pyGBM").def(py::init<float,
