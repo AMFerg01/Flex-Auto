@@ -44,10 +44,10 @@ RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
 
 RUN mkdir -p /home/app_user/app
 
-WORKDIR /home/app_user/app/
-
+ENV APP_DIR="/home/app_user/app/"
+WORKDIR ${APP_DIR}
 
 RUN echo 'export PS1="\[$(tput setaf 165)\](ubuntu-jammy)\[$(tput setaf 171)\] \[$(tput setaf 219)\]\w\[$(tput sgr0)\] $: "' >> ~/.bashrc
 
-ENV APP_DIR="/home/app_user/app/"
-WORKDIR ${APP_DIR}
+SHELL ["/bin/bash", "-c"]
+
