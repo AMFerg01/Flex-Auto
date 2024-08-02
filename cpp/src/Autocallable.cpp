@@ -152,7 +152,10 @@ void AthenaAutocallable::preliminary_checks(void) {
 
 AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel & gbm)
 {
-    float price = 1.5;
+
+    float price = INFINITY;
+
+
     auto result = AthenaResult(this->coupon_barrier,
         this->autocall_barrier,
         this->exit_barrier,
@@ -164,6 +167,9 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel & gbm)
         this->kill_value,
         this->inception_spot,
         gbm.stocks);
+
+
+
     result.price = price;
     return result;
 }
