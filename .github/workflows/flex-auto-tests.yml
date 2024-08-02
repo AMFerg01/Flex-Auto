@@ -1,0 +1,20 @@
+name: Flex Auto Tests
+
+on: 
+  pull_request:
+    branches: [ main ]
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t flexauto:${{ github.sha }} .
+
+    - name: Use Docker image and run tests
+      run: |
+        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace flexauto:${{ github.sha }} /bin/bash -c "cmake . && make && make install && python3 script.py"
+
