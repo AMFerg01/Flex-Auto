@@ -1,4 +1,4 @@
-from flex import AthenaAutocallable, GBM, AthenaResult
+from flexauto import AthenaAutocallable, GBM, AthenaResult
 
 import numpy as np
 import os
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     athena_configuration = {
         "coupon_barrier": 1.0,
-        "autocall_barrier": 1.0,
+        "autocall_barrier": 1.001,
         "autocall_value": 1.0,
         "exit_barrier": 1.2,
         "kill_barrier": 0.8,
@@ -48,7 +48,8 @@ if __name__ == "__main__":
         prices.append(result.getPrice())
         # print(result.getPrice())
         results.append(result)
-    
-    result.generate_json_dump()
+
+    print(result)
+    # result.generate_json_dump()
 
    
