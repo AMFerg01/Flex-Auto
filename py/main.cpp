@@ -18,7 +18,7 @@ public:
 };
 
 
-PYBIND11_MODULE(flex, m) {
+PYBIND11_MODULE(flexauto, m) {
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
 	py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def(py::init<float,
 																			float,
