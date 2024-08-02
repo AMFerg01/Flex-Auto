@@ -8,13 +8,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: docker://ghcr.io/flexauto:${{ github.sha }}
+      image: flexauto:${{ github.sha }}
     steps:
     - name: Check out the code
       uses: actions/checkout@v3
 
     - name: Build Docker image
-      run: docker build -t ghcr.io/$flexauto:${{ github.sha }} .
+      run: docker build -t flexauto:${{ github.sha }} .
 
     - name: Run tests
       run: |
