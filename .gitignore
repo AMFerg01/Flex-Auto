@@ -1,0 +1,45 @@
+# Python
+*.py[cod]
+__pycache__/
+*.so
+*.pyd
+*.py[co]
+
+# C++
+*.o
+*.a
+*.out
+*.dylib
+*.dll
+*.exe
+
+# Build directories
+build/
+dist/
+*.egg-info/
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE and editor files
+.idea/
+.vscode/
+*.iml
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+build/
+
+install_manifest.txt

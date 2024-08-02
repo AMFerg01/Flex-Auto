@@ -1,4 +1,3 @@
-version: '3.8' 
 
 services:
     shell:
@@ -8,5 +7,8 @@ services:
             context: .
             target: ubuntu_cxx_shell_2204
             dockerfile: ./Dockerfile
+        tty: true
+        stdin_open: true
+        command: bash
         volumes:
           - ./:/home/app_user/app/
