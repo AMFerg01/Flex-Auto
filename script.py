@@ -1,4 +1,4 @@
-from flex import AthenaAutocallable, GBM, AthenaResult
+from flexauto import AthenaAutocallable, GBM, AthenaResult
 
 import numpy as np
 import os
