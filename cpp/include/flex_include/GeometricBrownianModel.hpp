@@ -1,10 +1,13 @@
 #include <cstdint>
+#include <string>
+#include <utility>
 #include <vector>
 #include <iostream>
 
+#define data_column std::pair<std::string, std::vector<float>>
+
 #pragma once
-class GeometricBrownianModel
-{
+class GeometricBrownianModel {
 public:
   // asset related
   float drift, volatility, spot_price;
@@ -24,12 +27,8 @@ public:
 
   ~GeometricBrownianModel();
 
-  // print utilities
   void print(void);
-  void print_path(unsigned int num_steps);
-  void print_stocks(unsigned int num_steps);
-
-  // workload methods.
   void generate_path(void);
-  void compute_spot_prices(void);
+  void generate_stock_price(void);
+  void write_csv(std::string filename, std::vector<data_column> dataset);
 };

@@ -1,6 +1,7 @@
 #include "GeometricBrownianModel.hpp"
 #include <cmath>
 #include <cstdint>
+#include <fstream>
 #include <random>
 #include <vector>
 
@@ -58,34 +59,6 @@ void GeometricBrownianModel::print(void) {
 	  << "stocks: " << "size[" << this->stocks.size() << "]" << "capacity[" << this->stocks.capacity() << "]"  "\n"
 	  << "} \n";
   }
-
-/* print_path 
-
-prints the number of steps equivalent to steps taken. 
-
-*/
-void GeometricBrownianModel::print_path(unsigned int num_steps){
-	
-	if (num_steps >= number_of_steps){
-		throw std::runtime_error("Number of steps specified to print exceeds the number of steps for the path");
-	}
-
-	for(auto i=0; i < num_steps; i++ ){
-		std::cout << this->paths.at(i) << "\n"; 
-	}
-
-}
-
-void GeometricBrownianModel::print_stocks(unsigned int num_steps){
-
-	if (num_steps >= number_of_steps){
-		throw std::runtime_error("Number of steps specified to print exceeds the number of steps for the path");
-	}
-
-	for(auto i=0; i < num_steps; i++ ){
-		std::cout << this->stocks.at(i) << "\n"; 
-	}
-}
 /* generate_path
 
 Generates a path using random normal draws from the standard library.
@@ -100,7 +73,7 @@ void GeometricBrownianModel::generate_path(void) {
 	paths_iter++;
 
 	// generate the wiener process.
-	for(; wiener_iter != this->wiener_process.end() + 1; wiener_iter++)
+	for(; wiener_iter != this->wiener_process.end(); wiener_iter++)
 	{
 		*wiener_iter = standard_normal(generator);
 	}
@@ -115,15 +88,49 @@ void GeometricBrownianModel::generate_path(void) {
 
 }
 
-
-/** compute_spot_prices
- * 
- * Assumes a path is generated and you can compute the path accordingly. 
+/* generate_stock_price
+Uses log-normal assumption to generate a path, then takes exponential.
 */
-void GeometricBrownianModel::compute_spot_prices(void) {
+void GeometricBrownianModel::generate_stock_price(void) {
+	generate_path();
+	this->stocks = this->paths;
+	for(auto p = stocks.begin(); p!= stocks.end(); p++)
+		*p = expf(*p);
+}
 
-	for (auto i=0; i < paths.size(); i++){
-		stocks.at(i) = expf(paths.at(i));
-	}
-	
+
+/* write_csv
+
+Copied from the Ben Gorman's blog.
+https://www.gormanalysis.com/blog/reading-and-writing-csv-files-with-cpp/
+, takes in a pair of string as filename,
+vector of data columns.
+*/
+void GeometricBrownianModel::write_csv(std::string filename, std::vector<data_column> dataset)
+{
+
+	// Create an output filestream object
+   std::ofstream my_file = std::ofstream(filename);
+
+   // Send column names to the stream
+   for(int j = 0; j < dataset.size(); ++j)
+   {
+       my_file << dataset.at(j).first;
+       if(j != dataset.size() - 1) my_file << ","; // No comma at end of line
+   }
+   my_file << "\n";
+
+   // Send data to the stream
+   for(int i = 0; i < dataset.at(0).second.size(); ++i)
+   {
+       for(int j = 0; j < dataset.size(); ++j)
+       {
+           my_file << dataset.at(j).second.at(i);
+           if(j != dataset.size() - 1) my_file << ","; // No comma at end of line
+       }
+       my_file << "\n";
+   }
+
+   // Close the file
+   my_file.close();
 }

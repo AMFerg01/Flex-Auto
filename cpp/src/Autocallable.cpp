@@ -1,102 +1,130 @@
-/** -- Autocallable.cpp
- *
- * Source code for running autocallable pricing workloads using monte-carlo based simulations.
- */
-#include <exception>
-#include <vector>
 #include "Autocallable.hpp"
-#include "debug_utilities.hpp"
-#include "math.h"
+#include "GeometricBrownianModel.hpp"
+#include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <stdexcept>
+#include <string>
 
-// Utilities
-// checks whether a number is bounded within the tolerance.
-bool is_close(float value, float comparing_value, float tol)
-{
-  bool check = std::fabs(value - comparing_value) < tol;
-  if (check)
-  {
-    return true;
-  }
-  else
-  {
-    return false;
-  }
+#define quote "\""
+#define write_json_line(key, value)  quote << key << quote << ": " << value << ", \n"
+#define write_json_line_last(key, value)  quote << key << quote << ": " << value << "\n"
+#define write_json_line_last_wquote(key,value) quote << key << quote << ": " << quote << value << quote << "\n"
+/* checks if a file exists with the specified name.
+otherwise return false.
+*/
+bool file_exists(const std::string & name) {
+    // try to read, if you can then just close it and return boolean.
+    std::FILE * file = std::fopen(name.c_str(), "r");
+    if (file)
+    {
+        fclose(file);
+        return true;
+    } else {
+        return false;
+    }
 }
 
-/** -- BadAutocallParameterException
-
-An exception specific to parameters of the autocall, is thrown
-when a trade defined within an AthenaAutocallable is ill-defined.
-*/
-class BadAutocallParameterException : std::exception
+AthenaResult::AthenaResult(float coupon_barrier, float autocall_barrier, float exit_barrier, float kill_barrier, float maturity,
+                 const std::vector<float>& observation_dates,
+                 float autocall_value, float coupon_value, float kill_value,
+                 float inception_spot, const std::vector<float>& underlying_path)
+:
+coupon_barrier(coupon_barrier),
+autocall_barrier(autocall_barrier),
+exit_barrier(exit_barrier),
+kill_barrier(kill_barrier),
+maturity(maturity),
+observation_dates(observation_dates),
+autocall_value(autocall_value),
+coupon_value(coupon_value),
+kill_value(kill_value),
+inception_spot(inception_spot),
+underlying_path(underlying_path),
+price(NAN)
 {
-private:
-  const char *error_message;
-
-public:
-  BadAutocallParameterException(const char *message)
-  {
-    this->error_message = message;
-  }
-
-  const char *what() { return this->error_message; }
 };
 
-/* Constructor for AthenaAutocallable
- */
-AthenaAutocallable::AthenaAutocallable(
-    float coupon_barrier,
-    float autocall_barrier,
-    float exit_barrier,
-    float kill_barrier,
-    float autocall_value,
-    float coupon_value,
-    float kill_value,
-    float maturity,
-    std::vector<float> &observation_dates)
+AthenaResult::~AthenaResult(){};
+
+/* generates a json dump of the result class with a file called
+result.json
+*/
+void AthenaResult::generate_json_dump(void)
 {
+
+    std::string result_name("result.json");
+
+    if (file_exists(result_name)){
+        throw std::runtime_error("result.json already exists, consider deleting it");
+    }
+
+    std::ofstream file;
+    file.open(result_name);
+
+    // write open bracket.
+    file << "{\n";
+
+    file << write_json_line("coupon_barrier", coupon_barrier);
+    file << write_json_line("autocall_barrier", autocall_barrier);
+    file << write_json_line("exit_barrier", exit_barrier);
+    file << write_json_line("kill_barrier", kill_barrier);
+    file << write_json_line("maturity", maturity);
+    file << write_json_line("autocall_value", autocall_value);
+    file << write_json_line("coupon_value", coupon_value);
+    file << write_json_line("kill_value", kill_value);
+    file << write_json_line("inception_spot", inception_spot);
+    file << write_json_line_last_wquote("price", std::to_string(price));
+
+    // write close bracket.
+    file << "}\n";
+
+    file.close();
+}
+
+AthenaAutocallable::AthenaAutocallable(float coupon_barrier, float autocall_barrier,
+                   float autocall_value, float exit_barrier,
+                   float kill_barrier, float maturity,
+                   std::vector<float> & observation_dates,
+                   float coupon_value, float kill_value,
+                   float inception_spot)
+: coupon_barrier(coupon_barrier),
+autocall_value(autocall_value),
+kill_barrier(kill_barrier),
+exit_barrier(exit_barrier),
+maturity(maturity),
+observation_dates(observation_dates),
+coupon_value(coupon_value),
+kill_value(kill_value),
+inception_spot(inception_spot)
+{
+
   // store all the attributes.
   this->coupon_barrier = coupon_barrier;
-  this->autocall_barrier = autocall_barrier;
+  this->autocall_value = autocall_value;
   this->kill_barrier = kill_barrier;
   this->exit_barrier = exit_barrier;
-  this->autocall_value = autocall_value;
-  this->coupon_value = coupon_value;
-  this->kill_value = kill_value;
   this->maturity = maturity;
   this->observation_dates = observation_dates;
-};
 
-AthenaAutocallable::~AthenaAutocallable(){
+  // perform checks.
+  this->preliminary_checks();
+}
 
-};
 
-/**
-preliminary_checks
-
-Checks whether or not the parameters of the autocall trade are coherent
-and do not contain any spurious or redundant settings that would make
-the trade simplified. Function ensures that
-**/
-void AthenaAutocallable::preliminary_checks(void)
-{
-
-  if (autocall_value <= 0.0)
-  {
+void AthenaAutocallable::preliminary_checks(void) {
+  if (autocall_value <= 0.0) {
     throw BadAutocallParameterException("Autocall value is non-positive");
   }
 
-  if (exit_barrier <= 0.0)
-  {
+  if (exit_barrier <= 0.0) {
     throw BadAutocallParameterException("Exit barrier is non-positive value");
   }
 
-  if (kill_barrier <= 0.0)
-  {
+  if (kill_barrier <= 0.0) {
     throw BadAutocallParameterException("Kill value is non-positive");
   }
-  if (maturity <= 0.0)
-  {
+  if (maturity <= 0.0) {
     throw BadAutocallParameterException("Maturity cannot be negative");
   }
 
@@ -106,264 +134,36 @@ void AthenaAutocallable::preliminary_checks(void)
   // loop through dates and calculate difference of lag 1,
   // check if the difference is monotonically increasing.
   for (auto p = observation_dates.begin(); p != observation_dates.end() - 1;
-       p++)
-  {
+       p++) {
     observation_date_difference = *(p + 1) - *p;
-    if (observation_date_difference < 0.0)
-    {
+    if (observation_date_difference < 0.0) {
       throw BadAutocallParameterException(
           "Observation dates are not monotonically increasing.");
     }
   } // end of observation date check
 
   // check if maturity is less than observation date.
-  if (*(observation_dates.end()) >= maturity)
-  {
+  if (*(observation_dates.end()) >= maturity) {
     throw BadAutocallParameterException(
         "Last observation date is geq than maturity. ");
   } // end of maturity check.
-} // end of preliminary checks.
+}   // end of preliminary checks.
 
-/**observation_index
-check_ordering_of_barriers
-function to check the ordering of barriers so that they are coherent.
-**/
-void AthenaAutocallable::check_barrier_ordering(void)
+
+AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel & gbm)
 {
-
-  if (kill_barrier >= coupon_barrier)
-  {
-    throw BadAutocallParameterException("Kill barrier is ill-defined.");
-  }
-  if (coupon_barrier != autocall_barrier)
-  {
-    throw BadAutocallParameterException(
-        "Coupon barrier should be at autocall barrier otherwise trade does "
-        "not make sense");
-  }
-
-  if (autocall_barrier >= exit_barrier)
-  {
-    throw BadAutocallParameterException(
-        "Autocall barrier should be below the exit barrier.");
-  }
-} // end of check ordering of barriers.
-
-/* price_path
-
-  Main workload function.
-
-    - takes a single path generated by a mc scheme and then calculates the payoff at time maturity.
-
-    According to the autocallable scheme, the path the underlying takes terminates at one of the following conditions:
-    - maturity
-    - observation dates
-
-    observation_dates:
-      termination of the autocallable can occur when the underlying is observed on the observation dates,
-      one of the following can occur when the path of the underlying:
-        - broke the kill barrier, the option redeems at a the `kill_value` * spot at inception.
-        - broke the coupon/autocall barrier, option autocalls with coupons.
-        - broke the `exit_barrier`, option autocalls with level, coupons, and the gains of the underlying.
-
-*/
-AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel &gbm)
-{
-  // AthenaResult AthenaAutocallable::price_path(GeometricBrownianModel & gbm){
-
-  // set up calculation.
-  std::vector<float> stock_normalized;
-  float stock_initial = gbm.stocks.at(0);
-
-  // normalize stocks
-  for (auto iter = gbm.stocks.begin(); iter != gbm.stocks.end(); iter++)
-  {
-    stock_normalized.push_back(
-        *iter / stock_initial);
-  }
-
-  // floating point vector containg time specifications.
-  std::vector<float> tenor;
-  tenor.assign(gbm.number_of_steps + 1, 0.0);
-
-  // build time vector.
-  for (auto i = 1; i < gbm.number_of_steps + 1; i++)
-  {
-    tenor[i] = tenor[i - 1] + gbm.step_size;
-  }
-
-  std::vector<unsigned int> time_index;
-  std::vector<float> observation_dates = this->observation_dates;
-
-  /* obs_is_close
-    keeps track of whether or not the undrelying time index is close to an observation date.
-  */
-  std::vector<bool> obs_is_close;
-
-  /* observed time index
-    keeps track of which index the observed underlying triggered a termination or value event on said date.
-  */
-  std::vector<unsigned int> observed_time_index;
-
-  // iterate through and trigger whether the event is nearby.
-  for (auto event_index = 1; event_index < gbm.number_of_steps + 1; event_index++)
-  {
-
-    // iterate through observations.
-    for (auto observation_index = 0; observation_index < observation_dates.size(); observation_index++)
-    {
-
-      float tenor_to_compare = tenor[event_index];
-      float observation_date_to_compare = observation_dates[observation_index];
-      float tolerance = gbm.step_size * 0.5;
-
-      // calculate boolean
-      bool is_close_result = is_close(tenor_to_compare, observation_date_to_compare, tolerance);
-
-      // record result
-      obs_is_close.push_back(
-          is_close_result);
-
-      // get index of when it occured.
-      if (is_close_result)
-      {
-        observed_time_index.push_back(
-            event_index);
-      }
-    }
-  }
-
-  // Perform Checks
-  AthenaResult result = check_terminations(0,
-                                             observed_time_index.at(0),
-                                             stock_normalized.at(observed_time_index.at(0)),
-                                             gbm,
-                                             false);
-  for (auto i = 0; i < observed_time_index.size(); i++)
-  {
-
-    result = check_terminations(i,
-                                observed_time_index.at(i),
-                                stock_normalized.at(observed_time_index.at(i)),
-                                gbm,
-                                false);
-    
-    std::cout << result.price << std::endl;
-  }
-  try
-  {
+    float price = 1.5;
+    auto result = AthenaResult(this->coupon_barrier,
+        this->autocall_barrier,
+        this->exit_barrier,
+        this->kill_barrier,
+        gbm.maturity,
+        this->observation_dates,
+        this->autocall_value,
+        this->autocall_value, //  coupon value is also autocall value
+        this->kill_value,
+        this->inception_spot,
+        gbm.stocks);
+    result.price = price;
     return result;
-  }
-  catch(const std::exception& e)
-  {
-    std::cout << "test" << std::endl;
-    std::cerr << e.what() << '\n';
-  }
-  
-  
-  // for i, index in enumerate(obs_time_index):
-
-  //     termination_value: Optional[AthenaResult] = self.check_terminations(
-  //         i=i,
-  //         index=index,
-  //         stock_normalized=stock_normalized,
-  //         gbm=gbm,
-  //         maturity=False,
-  //     )
-
-  //     if termination_value is None:
-  //         continue
-
-  //     if isinstance(termination_value, AthenaResult):
-  //         return termination_value
-
-  //     raise NotImplementedError("User should not be here")
-
-  // # check at maturity.
-  // index = -1
-
-  // return self.check_terminations(
-  //     i=len(self.observation_dates),
-  //     index=index,
-  //     stock_normalized=stock_normalized,
-  //     gbm=gbm,
-  //     maturity=True,
-  // )
-   //     raise NotImplementedError("User should not be here")
-  return check_terminations(0,0,0.0,gbm,0);
 }
-
-AthenaResult AthenaAutocallable::check_terminations(
-    unsigned int i,
-    unsigned int index,
-    float spot_normalized,
-    GeometricBrownianModel &gbm,
-    bool maturity)
-{
-
-  AthenaResult result = AthenaResult{
-      this->coupon_barrier,
-      this->autocall_barrier,
-      this->exit_barrier,
-      this->kill_barrier,
-      this->autocall_value,
-      this->coupon_value,
-      this->kill_value,
-      this->maturity,
-      this->observation_dates,
-      gbm.stocks.at(0),
-      gbm.stocks,
-      gbm,
-      0,
-      std::string("error"),
-      index};
-
-  // check if autocall level is triggered but not exit level.
-  if ((this->autocall_barrier <= spot_normalized) & (spot_normalized < this->exit_barrier))
-  {
-    result.price = gbm.stocks.at(0) * (this->autocall_value +
-                                       this->coupon_value * (i + 1)); // set price to autocall + the number of coupons accumulated.
-
-    result.termination_status = std::string("ac-barrier-" + std::to_string(i + 1));
-    std::vector<float> new_path;
-    result.underlying_path = {result.underlying_path.begin(),
-                              result.underlying_path.begin() + result.terminating_index + 1};
-  }
-
-
-
-
-  return result;
-}
-
-//     # perform checks.
-
-//     # do termination checks.
-//     for i, index in enumerate(obs_time_index):
-
-//         termination_value: Optional[AthenaResult] = self.check_terminations(
-//             i=i,
-//             index=index,
-//             stock_normalized=stock_normalized,
-//             gbm=gbm,
-//             maturity=False,
-//         )
-
-//         if termination_value is None:
-//             continue
-
-//         if isinstance(termination_value, AthenaResult):
-//             return termination_value
-
-//         raise NotImplementedError("User should not be here")
-
-//     # check at maturity.
-//     index = -1
-
-//     return self.check_terminations(
-//         i=len(self.observation_dates),
-//         index=index,
-//         stock_normalized=stock_normalized,
-//         gbm=gbm,
-//         maturity=True,
-//     )
