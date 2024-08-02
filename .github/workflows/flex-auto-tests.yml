@@ -7,8 +7,6 @@ on:
 jobs: 
   build:
     runs-on: ubuntu-latest
-    container:
-      image: flexauto:${{ github.sha }}
     steps:
     - name: Check out the code
       uses: actions/checkout@v3
@@ -16,7 +14,6 @@ jobs:
     - name: Build Docker image
       run: docker build -t flexauto:${{ github.sha }} .
 
-    - name: Run tests
+    - name: Use Docker image and run tests
       run: |
-        # Run your test commands here, for example:
-        make test
+        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace flexauto:${{ github.sha }} make test
