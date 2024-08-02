@@ -1,0 +1,22 @@
+name: Flex Auto Tests
+
+on: 
+  pull_request:
+    branches: [ main ]
+
+jobs: 
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: docker://ghcr.io/${{ github.repository }}:${{ github.sha }}
+    steps:
+    - name: Check out the code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+
+    - name: Run tests
+      run: |
+        # Run your test commands here, for example:
+        make test
