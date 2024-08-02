@@ -16,4 +16,4 @@ jobs:
 
     - name: Use Docker image and run tests
       run: |
-        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace flexauto:${{ github.sha }} make test
+        docker run --rm -v ${{ github.workspace }}:/workspace -w /workspace flexauto:${{ github.sha }} /bin/bash -c "make && make install && python3 script.py"
