@@ -14,7 +14,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 
 
-project(flex)
+project(flexauto)
 
 find_package(Python3 REQUIRED Interpreter Development)
 
@@ -33,15 +33,15 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES} ${HEADER_FIL
 set(pybind11_DIR ~/.local/lib/python3.10/site-packages/pybind11/share/cmake/pybind11)
 
 find_package(pybind11 REQUIRED)
-pybind11_add_module(flex 
+pybind11_add_module(flexauto 
 	${SOURCE_FILES}
 	${HEADER_FILES}
 	${PYTHON_FILES}
 )
 
-target_link_libraries(flex PUBLIC)
+target_link_libraries(flexauto PUBLIC)
 
-install(TARGETS flex
+install(TARGETS flexauto
   COMPONENT python
   LIBRARY DESTINATION "${PYTHON_LIBRARY_DIR}"
   )

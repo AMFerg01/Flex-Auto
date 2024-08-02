@@ -22,13 +22,15 @@ RUN apt-get update && apt-get install -y \
     && apt-get update
 
 # Install Python 3.10 and pip
-RUN apt-get install -y python3.10 python3.10-dev python3-pip
+RUN apt-get install -y python3 python3-dev python3-pip
 
 # Set Python3.10 as default
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 
 # Install Python packages
 RUN pip install pybind11[global] numpy==2.0.1 matplotlib
+
+RUN apt-get update
 
 # Set up the working directory
 RUN mkdir -p /home/app_user/app

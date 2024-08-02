@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-project(flex VERSION 0.0.0)
+project(flexauto VERSION 0.0.0)
 
 # Include dir
 include_directories(/usr/local/include)
@@ -30,13 +30,13 @@ set(SOURCE_FILES
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCE_FILES})
 
 # Add library
-add_library(flex SHARED ${SOURCE_FILES})
+add_library(flexauto SHARED ${SOURCE_FILES})
 
 # Include directories
-target_include_directories(flex PRIVATE include/flex_include)
+target_include_directories(flexauto PRIVATE include/flex_include)
 
 # Install
-install(TARGETS flex DESTINATION lib)
+install(TARGETS flexauto DESTINATION lib)
 
 # Install the headers
 install(FILES include/flex DESTINATION include)
