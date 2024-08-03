@@ -12,8 +12,8 @@ if __name__ == "__main__":
 
     experiment_configuration = {
         "drift": 0.05,
-        "volatility": 0.6,
-        "spot_price": 1.0,
+        "volatility": 0.06,
+        "spot_price": 1.2,
         "maturity": 5.0,  # years
         "step_size": 0.01,
         "number_of_steps": 1000,
@@ -40,16 +40,20 @@ if __name__ == "__main__":
     athena = AthenaAutocallable(*athena_configuration.values())
 
     prices = []
+    statuses = []
     results = []
-    for i in range(100):
+    for i in range(1000):
         gbm = GBM(*experiment_configuration.values())
-        gbm.generate_path()
+        gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
         prices.append(result.getPrice())
+        statuses.append(result.getTerminationStatus())
         # print(result.getPrice())
         results.append(result)
 
     print(prices)
+    print(statuses)
+    breakpoint()
     # result.generate_json_dump()
 
    

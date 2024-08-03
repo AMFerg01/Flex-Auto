@@ -10,7 +10,19 @@
 #define write_json_line(key, value) quote << key << quote << ": " << value << ", \n"
 #define write_json_line_last(key, value) quote << key << quote << ": " << value << "\n"
 #define write_json_line_last_wquote(key, value) quote << key << quote << ": " << quote << value << quote << "\n"
-/* checks if a file exists with the specified name.
+
+
+#define log_vec(vec) \
+    { \
+        std::cout << #vec << ": ["; \
+        for (size_t i = 0; i < vec.size(); ++i) { \
+            std::cout << vec[i]; \
+            if (i != vec.size() - 1) std::cout << ", "; \
+        } \
+        std::cout << "]" << std::endl; \
+    }/* checks if a file exists with the specified name.
+
+
 otherwise return false.
 */
 bool file_exists(const std::string &name)
@@ -204,6 +216,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       (this->autocall_barrier <= stock_normalized[index]) &&
       (stock_normalized[index] < this->exit_barrier))
   {
+
     // price is calculated as stock initial * (AC_VALUE + number of coupons added)
     float coupon_multiplier = this->coupon_value * (i + 1);
     price = gbm.stocks[0] * (this->autocall_value + coupon_multiplier);
@@ -247,12 +260,19 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     }
     else
     {
-      std::nullopt;
+      return std::nullopt;
     }
   }
 
   if (result.price == INFINITY)
   {
+
+    // comment this out later for debugging
+    // std::cout << "price: " << price << std::endl; 
+    // std::cout << "price: " << result.price << std::endl; 
+    // std::cout << "stock_normalized: " << stock_normalized[index] << "," << index << std::endl; 
+    // std::cout << "term: " << result.termination_status << std::endl; 
+
     throw BadAutocallError("user should not be here, price is infinity");
   }
   else
@@ -283,7 +303,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
   // Normalize stock prices
 
   std::vector<float> stock_normalized(gbm.stocks.size());
-
+  
   for (size_t i = 0; i < gbm.stocks.size(); ++i)
   {
     stock_normalized[i] = gbm.stocks[i] / gbm.stocks[0];
