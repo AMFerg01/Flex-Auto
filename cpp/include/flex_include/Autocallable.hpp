@@ -1,6 +1,7 @@
 #include <exception>
 #include <vector>
 #include <optional> 
+#include <string> 
 #include <cstddef>
 #include "GeometricBrownianModel.hpp"
 
@@ -23,6 +24,7 @@ public:
     // underlying specific information.
     float inception_spot;
     std::vector<float> underlying_path;
+    std::string termination_status; 
 
     float price;
 
@@ -96,6 +98,7 @@ public:
     float kill_barrier;
     float maturity;
     float coupon_value, kill_value, inception_spot;
+    std::string termination_status; 
     std::vector<float> observation_dates;
 
     AthenaAutocallable(float coupon_barrier, float autocall_barrier,

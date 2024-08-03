@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     experiment_configuration = {
         "drift": 0.05,
-        "volatility": 0.2,
+        "volatility": 0.6,
         "spot_price": 1.0,
         "maturity": 5.0,  # years
         "step_size": 0.01,
@@ -25,7 +25,7 @@ if __name__ == "__main__":
 
     athena_configuration = {
         "coupon_barrier": 1.0,
-        "autocall_barrier": 1.001,
+        "autocall_barrier": 1.0,
         "autocall_value": 1.0,
         "exit_barrier": 1.2,
         "kill_barrier": 0.8,
@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     prices = []
     results = []
-    for i in range(20):
+    for i in range(100):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_path()
         result = athena.price_gbm(gbm)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         # print(result.getPrice())
         results.append(result)
 
-    print(result)
+    print(prices)
     # result.generate_json_dump()
 
    

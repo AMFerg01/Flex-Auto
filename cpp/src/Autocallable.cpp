@@ -44,6 +44,7 @@ AthenaResult::AthenaResult(float coupon_barrier, float autocall_barrier, float e
       inception_spot(inception_spot),
       underlying_path(underlying_path),
       price(NAN) {
+      this->termination_status = std::string("not available");
       };
 
 AthenaResult::~AthenaResult() {};
@@ -103,7 +104,7 @@ AthenaAutocallable::AthenaAutocallable(float coupon_barrier, float autocall_barr
 {
 
   // perform checks.
-
+  this->termination_status = std::string("not run"); 
   this->preliminary_checks();
   this->check_ordering_of_barriers();
 }
@@ -207,6 +208,9 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     float coupon_multiplier = this->coupon_value * (i + 1);
     price = gbm.stocks[0] * (this->autocall_value + coupon_multiplier);
     result.price = price;
+    this->termination_status = std::string("AC + COUPON");
+    result.termination_status = this->termination_status;
+
   }
 
   // EXIT CHECK
@@ -214,6 +218,8 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   {
     price = gbm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
     result.price = price;
+    this->termination_status = std::string("EXIT + COUPON");
+    result.termination_status = this->termination_status;
   }
 
   // KILL CHECK
@@ -221,6 +227,9 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   {
     price = gbm.stocks[0] * this->kill_value;
     result.price = price;
+    this->termination_status = std::string("KILL");
+    result.termination_status = this->termination_status;
+
   }
 
   if (
@@ -232,6 +241,9 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     {
       price = gbm.stocks[0];
       result.price = price;
+      this->termination_status = std::string("MATURITY");
+      result.termination_status = this->termination_status;
+
     }
     else
     {
@@ -307,29 +319,16 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
       {
         obs_is_close[i] = true;
         observed_time_index.push_back((size_t)time_index[j]);
-        break;
-      }
-    }
-  }
-
-  std::vector<uint> obs_time_index;
-
-  for (size_t anchor = 0; anchor < obs_is_close.size(); ++anchor)
-  {
-    for (size_t j = 0; j < time.size(); ++j)
-    {
-      if (obs_is_close[anchor])
-      {
-        obs_time_index.push_back(time_index[j]);
-        break; // Break after the first match
       }
     }
   }
 
   // go through observations
-  for (size_t i = 0; i < obs_time_index.size(); ++i)
+  for (size_t i = 0; i < observed_time_index.size(); ++i)
   {
-    int index = obs_time_index[i];
+    int index = observed_time_index[i];
+
+    // throw std::runtime_error(index);
 
     // Call check_terminations function
     std::optional<AthenaResult> termination_value = this->check_terminations(
@@ -346,9 +345,11 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
       continue;
     }
 
+
     // Check if the termination_value contains a valid AthenaResult
     if (termination_value)
     {
+
       return termination_value.value();
     }
 

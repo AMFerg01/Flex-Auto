@@ -58,7 +58,8 @@ PYBIND11_MODULE(flexauto, m) {
 												.def("getUnderlyingPath", [](AthenaResult a) {return a.underlying_path;})
 												.def("getObsDates", [](AthenaResult a) {return a.observation_dates;})
 												.def("getInceptionSpot", [](AthenaResult a) {return a.inception_spot;})
-												.def("getMaturity", [](AthenaResult a) {return a.maturity;});
+												.def("getMaturity", [](AthenaResult a) {return a.maturity;})
+												.def("getTerminationStatus",  [](AthenaResult a) {return a.termination_status;});
 
 	using base = GeometricBrownianModel;
 	py::class_<base>(m, "GBM").def(py::init<float,
