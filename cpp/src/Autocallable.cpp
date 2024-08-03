@@ -268,5 +268,117 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
 
   result.price = price;
 
+  // Normalize stock prices
+
+  std::vector<float> stock_normalized(gbm.stocks.size());
+
+  for (size_t i = 0; i < gbm.stocks.size(); ++i)
+  {
+    stock_normalized[i] = gbm.stocks[i] / gbm.stocks[0];
+  }
+
+  // Calculate time steps
+  std::vector<float> time(gbm.number_of_steps + 1);
+  float time_step = gbm.maturity / gbm.number_of_steps;
+  for (size_t i = 0; i <= gbm.number_of_steps; ++i)
+  {
+    time[i] = i * time_step;
+  }
+
+  // Time index
+  std::vector<uint> time_index(gbm.number_of_steps + 1);
+  for (uint i = 0; i <= gbm.number_of_steps; ++i)
+  {
+    time_index[i] = i;
+  }
+
+  // Observation dates
+  std::vector<float> observation_dates(this->observation_dates);
+  std::vector<size_t> observed_time_index;
+
+  // Determine if the observation dates are close to time steps
+  std::vector<bool> obs_is_close(observation_dates.size(), false);
+
+  for (size_t i = 0; i < observation_dates.size(); ++i)
+  {
+    for (size_t j = 0; j < time.size(); ++j)
+    {
+      if (fabs(observation_dates[i] - time[j]) < gbm.step_size / 2)
+      {
+        obs_is_close[i] = true;
+        observed_time_index.push_back((size_t)time_index[j]);
+        break;
+      }
+    }
+  }
+
+  std::vector<uint> obs_time_index;
+
+  for (size_t anchor = 0; anchor < obs_is_close.size(); ++anchor)
+  {
+    for (size_t j = 0; j < time.size(); ++j)
+    {
+      if (obs_is_close[anchor])
+      {
+        obs_time_index.push_back(time_index[j]);
+        break; // Break after the first match
+      }
+    }
+  }
+
+  // go through observations
+  for (size_t i = 0; i < obs_time_index.size(); ++i)
+  {
+    int index = obs_time_index[i];
+
+    // Call check_terminations function
+    std::optional<AthenaResult> termination_value = this->check_terminations(
+        i,
+        index,
+        stock_normalized,
+        gbm,
+        false // maturity
+    );
+
+    // Continue if no termination value is returned
+    if (!termination_value.has_value())
+    {
+      continue;
+    }
+
+    // Check if the termination_value contains a valid AthenaResult
+    if (termination_value)
+    {
+      return termination_value.value();
+    }
+
+    // Raise error if reached this point
+    throw std::runtime_error("User should not be here");
+  }
+
+  // Check at maturity
+  int index = -1; // This indicates the end of the period, i.e., maturity
+
+  // Call check_terminations for the maturity condition
+  std::optional<AthenaResult> termination_at_maturity = this->check_terminations(
+      this->observation_dates.size(), // i is the number of observation dates
+      index,
+      stock_normalized,
+      gbm,
+      true // maturity
+  );
+
+  // Continue if no termination value is returned
+  if (!termination_at_maturity.has_value())
+  {
+    throw BadAutocallError("User should not be here, everything must be terminated at maturity");
+  }
+
+  // Check if the termination_value contains a valid AthenaResult
+  if (termination_at_maturity)
+  {
+    return termination_at_maturity.value();
+  }
+
   return result;
 }

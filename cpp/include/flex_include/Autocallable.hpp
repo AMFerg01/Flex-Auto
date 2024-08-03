@@ -1,7 +1,9 @@
 #include <exception>
 #include <vector>
 #include <optional> 
+#include <cstddef>
 #include "GeometricBrownianModel.hpp"
+
 
 /* -- AthenaResult class
 contains the resultant information from a pricing call for athena autocall.

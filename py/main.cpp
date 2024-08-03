@@ -22,6 +22,8 @@ PYBIND11_MODULE(flexauto, m) {
 
 	// register excpetion here. 	
 	py::register_exception<BadAutocallParameterException>(m, "BadAutocallParameterException");
+	py::register_exception<BadAutocallError>(m, "BadAutocallError");
+
 
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
 	py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def(py::init<float,
