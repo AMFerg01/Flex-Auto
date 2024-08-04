@@ -47,13 +47,9 @@ if __name__ == "__main__":
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
         prices.append(result.getPrice())
-        statuses.append(result.getTerminationStatus())
         # print(result.getPrice())
         results.append(result)
 
     print(prices)
-    print(statuses)
-    breakpoint()
-    # result.generate_json_dump()
 
    
