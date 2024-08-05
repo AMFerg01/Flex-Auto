@@ -3,11 +3,11 @@
 Runs AthenaAutocallable 
 
 */
-#include "GeometricBrownianModel.hpp"
-#include "Autocallable.hpp"
+#include "flex_include/BrownianModel.hpp"
+#include "flex_include/Autocallable.hpp"
 #include <cstdint>
 #include <iostream>
-#include "debug_utilities.hpp"
+#include "flex_include/debug_utilities.hpp"
 
 
 /* Tests out the basic Geometric Brownian Model
@@ -40,8 +40,7 @@ void test_gbm(void) {
 		number_of_steps, wiener_process, paths, stocks);
 
 	gbm.generate_path();
-	gbm.compute_spot_prices(); 
-
+	gbm.generate_stock_price();
 
 	// Athena Autocallable Parameters. 
 
@@ -55,19 +54,10 @@ void test_gbm(void) {
 	std::vector<float> observation_dates = {1.0, 2.0, 3.0};
 	
 	// declare athena autocallable trade. 
-	AthenaAutocallable athena_autocallable = AthenaAutocallable(
-	coupon_barrier,
- 	autocall_barrier,
-    exit_barrier,
-    kill_barrier,
-	autocall_value,
-	coupon_value,
-	kill_value,
-    maturity,
-	observation_dates
-	);
+	
+	AthenaAutocallable athena_autocallable = AthenaAutocallable(1.15,1.15,1,1.2,0.8,maturity,observation_dates,0.05,0.8,1);
 
-	athena_autocallable.price_path(gbm); 
+	athena_autocallable.price_abm(gbm); 
 }
 
 int main(int argc, char* argv[]) {
