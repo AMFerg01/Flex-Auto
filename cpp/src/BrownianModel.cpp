@@ -170,7 +170,7 @@ void GeometricBrownianModel::generate_path(void) {
 	auto wiener_iter = this->wiener_process.begin();
 	auto paths_iter = this->paths.begin();
 
-	*paths_iter = std::log(this->spot_price);
+	*paths_iter = this->spot_price;
 	paths_iter++;
 
 	// generate the wiener process.
