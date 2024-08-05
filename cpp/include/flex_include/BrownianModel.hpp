@@ -18,6 +18,8 @@ public:
 
   // indexed values.
   std::vector<float> wiener_process, paths, stocks;
+  std::vector<float> path_to_termination; 
+  uint termination_index; 
 
   ArithmeticBrownianModel(float drift, float volatility, float spot_price,
                          float maturity, float step_size,
@@ -43,9 +45,12 @@ public:
   // time related.
   float maturity, step_size;
   uint16_t number_of_steps;
+  std::vector<float> path_to_termination; 
+  uint termination_index; 
 
   // indexed values.
   std::vector<float> wiener_process, paths, stocks;
+
 
   GeometricBrownianModel(float drift, float volatility, float spot_price,
                          float maturity, float step_size,

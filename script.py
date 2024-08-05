@@ -45,8 +45,9 @@ if __name__ == "__main__":
     for i in range(1000):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
-        breakpoint()
         result = athena.price_gbm(gbm)
+        breakpoint()
+
         prices.append(result.getPrice())
         # print(result.getPrice())
         results.append(result)

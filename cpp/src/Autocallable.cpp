@@ -467,7 +467,7 @@ AthenaResult AthenaAutocallable::price_abm(ArithmeticBrownianModel &abm)
     // Check if the termination_value contains a valid AthenaResult
     if (termination_value)
     {
-
+      abm.termination_index = index;  
       return termination_value.value();
     }
 
@@ -496,6 +496,7 @@ AthenaResult AthenaAutocallable::price_abm(ArithmeticBrownianModel &abm)
   // Check if the termination_value contains a valid AthenaResult
   if (termination_at_maturity)
   {
+    abm.termination_index = index;  
     return termination_at_maturity.value();
   }
 
@@ -592,7 +593,9 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
     // Check if the termination_value contains a valid AthenaResult
     if (termination_value)
     {
-
+      gbm.termination_index = index;
+      std::vector<float> termination_path(gbm.stocks.begin(), gbm.stocks.begin() + index);
+      gbm.path_to_termination = termination_path;  
       return termination_value.value();
     }
 
@@ -621,6 +624,9 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
   // Check if the termination_value contains a valid AthenaResult
   if (termination_at_maturity)
   {
+
+    gbm.termination_index = index; 
+    gbm.path_to_termination = gbm.stocks; 
     return termination_at_maturity.value();
   }
 

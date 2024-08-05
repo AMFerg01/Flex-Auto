@@ -81,6 +81,8 @@ PYBIND11_MODULE(flexauto, m) {
 									.def("generate_path", &pyABM::generate_path)
 									.def("generate_stock_price", &pyABM::generate_stock_price)
 									.def("getStockPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.stocks; })
+									.def("getTermIndex", [](const ArithmeticBrownianModel abm) -> uint { return abm.termination_index; })
+									.def("getTermPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.path_to_termination; })
 									.def("write_csv", &pyABM::write_csv);
 
 
@@ -98,5 +100,7 @@ PYBIND11_MODULE(flexauto, m) {
 									.def("generate_path", &pyGBM::generate_path)
 									.def("generate_stock_price", &pyGBM::generate_stock_price)
 									.def("getStockPath", [](const GeometricBrownianModel gbm) -> std::vector<float> { return gbm.stocks; })
+									.def("getTermIndex", [](const GeometricBrownianModel gbm) -> uint { return gbm.termination_index; })
+									.def("getTermPath", [](const GeometricBrownianModel gbm) -> std::vector<float> { return gbm.path_to_termination; })
 									.def("write_csv", &pyGBM::write_csv);
 }

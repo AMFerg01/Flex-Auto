@@ -36,6 +36,8 @@ ArithmeticBrownianModel::ArithmeticBrownianModel(
 		this->wiener_process = wiener_process;
 		this->paths = paths;
 		this->stocks = stocks;
+		this->termination_index = (uint)0; 
+		this->path_to_termination = std::vector<float>({}); 
 
 }
 
@@ -157,7 +159,8 @@ GeometricBrownianModel::GeometricBrownianModel(
 		this->wiener_process = wiener_process;
 		this->paths = paths;
 		this->stocks = stocks;
-
+		this->termination_index = (uint)0; 
+		this->path_to_termination = std::vector<float>({}); 
 }
 
 GeometricBrownianModel::~GeometricBrownianModel() {
