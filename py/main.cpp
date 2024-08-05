@@ -17,6 +17,11 @@ public:
 	using ArithmeticBrownianModel::ArithmeticBrownianModel;
 };
 
+class pyGBM : public GeometricBrownianModel {
+public:
+	using GeometricBrownianModel::GeometricBrownianModel;
+};
+
 
 PYBIND11_MODULE(flexauto, m) {
 
@@ -76,6 +81,21 @@ PYBIND11_MODULE(flexauto, m) {
 									.def("generate_stock_price", &pyABM::generate_stock_price)
 									.def("getStockPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.stocks; })
 									.def("write_csv", &pyABM::write_csv);
-	// py::class_<pyAthenaAutocallable>(m, "pricepath").def("price_path", &pyAthenaAutocallable::price_path);
-	// py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def("check_terminations", &check_terminations);
+
+
+	using base_geo = GeometricBrownianModel;
+	py::class_<base_geo>(m, "GBM").def(py::init<float,
+												float,
+												float,
+												float,
+												float,
+												uint16_t,
+												std::vector<float> &,
+												std::vector<float> &,
+												std::vector<float> &>())
+									.def("print", &pyGBM::print)
+									.def("generate_path", &pyGBM::generate_path)
+									.def("generate_stock_price", &pyGBM::generate_stock_price)
+									.def("getStockPath", [](const GeometricBrownianModel gbm) -> std::vector<float> { return gbm.stocks; })
+									.def("write_csv", &pyGBM::write_csv);
 }
