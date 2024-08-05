@@ -160,6 +160,10 @@ GeometricBrownianModel::GeometricBrownianModel(
 
 }
 
+GeometricBrownianModel::~GeometricBrownianModel() {
+};
+
+
 void GeometricBrownianModel::generate_path(void) {
 
 	// declare iterators.
@@ -219,3 +223,32 @@ void GeometricBrownianModel::print(void) {
 	  << "stocks: " << "size[" << this->stocks.size() << "]" << "capacity[" << this->stocks.capacity() << "]"  "\n"
 	  << "} \n";
   }
+
+  void GeometricBrownianModel::write_csv(std::string filename, std::vector<data_column> dataset)
+{
+
+	// Create an output filestream object
+   std::ofstream my_file = std::ofstream(filename);
+
+   // Send column names to the stream
+   for(int j = 0; j < dataset.size(); ++j)
+   {
+       my_file << dataset.at(j).first;
+       if(j != dataset.size() - 1) my_file << ","; // No comma at end of line
+   }
+   my_file << "\n";
+
+   // Send data to the stream
+   for(int i = 0; i < dataset.at(0).second.size(); ++i)
+   {
+       for(int j = 0; j < dataset.size(); ++j)
+       {
+           my_file << dataset.at(j).second.at(i);
+           if(j != dataset.size() - 1) my_file << ","; // No comma at end of line
+       }
+       my_file << "\n";
+   }
+
+   // Close the file
+   my_file.close();
+}

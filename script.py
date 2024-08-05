@@ -1,4 +1,4 @@
-from flexauto import AthenaAutocallable, ABM, AthenaResult
+from flexauto import AthenaAutocallable, ABM, GBM, AthenaResult
 
 import numpy as np
 import os
@@ -43,10 +43,10 @@ if __name__ == "__main__":
     statuses = []
     results = []
     for i in range(1000):
-        abm = ABM(*experiment_configuration.values())
-        abm.generate_stock_price()
+        gbm = GBM(*experiment_configuration.values())
+        gbm.generate_stock_price()
         breakpoint()
-        result = athena.price_abm(abm)
+        result = athena.price_gbm(gbm)
         prices.append(result.getPrice())
         # print(result.getPrice())
         results.append(result)

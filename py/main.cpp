@@ -42,6 +42,7 @@ PYBIND11_MODULE(flexauto, m) {
 																			float,
 																			float>())
 																.def("price_abm", &pyAthenaAutocallable::price_abm)
+																.def("price_gbm", &pyAthenaAutocallable::price_gbm)
 																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks);
 	
 	py::class_<AthenaResult>(m, "AthenaResult").def(py::init<float,
