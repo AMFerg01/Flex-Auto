@@ -280,6 +280,105 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   }
 }
 
+std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
+                                                                   int index,
+                                                                   std::vector<float> stock_normalized,
+                                                                   GeometricBrownianModel gbm,
+                                                                   bool maturity)
+{
+
+  AthenaResult result = AthenaResult(
+      this->coupon_barrier,
+      this->autocall_barrier,
+      this->exit_barrier,
+      this->kill_barrier,
+      this->maturity,
+      this->observation_dates,
+      this->autocall_value,
+      this->coupon_value,
+      this->kill_value,
+      gbm.stocks[0], // inception_spot
+      gbm.stocks     // underlying_path
+  );
+
+  // Note: If you need to set the 'price' to infinity, you should do it separately as it isn't passed in the constructor.
+  float price;
+  result.price = std::numeric_limits<float>::infinity();
+
+  // AC < EXIT CHECK
+  if (
+      (this->autocall_barrier <= stock_normalized[index]) &&
+      (stock_normalized[index] < this->exit_barrier))
+  {
+
+    // price is calculated as stock initial * (AC_VALUE + number of coupons added)
+    float coupon_multiplier = this->coupon_value * (i + 1);
+    price = gbm.stocks[0] * (this->autocall_value + coupon_multiplier);
+    result.price = price;
+    this->termination_status = std::string("AC + COUPON");
+    result.termination_status = this->termination_status;
+
+  }
+
+  // EXIT CHECK
+  if (stock_normalized[index] >= this->exit_barrier)
+  {
+    price = gbm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
+    result.price = price;
+    this->termination_status = std::string("EXIT + COUPON");
+    result.termination_status = this->termination_status;
+  }
+
+  // KILL CHECK
+  if (stock_normalized[index] <= this->kill_barrier)
+  {
+    price = gbm.stocks[0] * this->kill_value;
+    result.price = price;
+    this->termination_status = std::string("KILL");
+    result.termination_status = this->termination_status;
+
+  }
+
+  if (
+      (this->kill_barrier < stock_normalized[index]) &&
+      (stock_normalized[index] < this->autocall_barrier))
+  {
+    // check maturity condition.
+    if (maturity)
+    {
+      price = gbm.stocks[0];
+      result.price = price;
+      this->termination_status = std::string("MATURITY");
+      result.termination_status = this->termination_status;
+
+    }
+    else
+    {
+      return std::nullopt;
+    }
+  }
+
+  if (result.price == INFINITY)
+  {
+
+    // comment this out later for debugging
+    // std::cout << "price: " << price << std::endl; 
+    // std::cout << "price: " << result.price << std::endl; 
+    // std::cout << "stock_normalized: " << stock_normalized[index] << "," << index << std::endl; 
+    // std::cout << "term: " << result.termination_status << std::endl; 
+
+    throw BadAutocallError("user should not be here, price is infinity");
+  }
+  else
+  {
+    return result;
+  }
+}
+
+
+
+
+
 AthenaResult AthenaAutocallable::price_abm(ArithmeticBrownianModel &abm)
 {
 

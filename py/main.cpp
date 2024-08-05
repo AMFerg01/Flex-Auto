@@ -74,6 +74,7 @@ PYBIND11_MODULE(flexauto, m) {
 									.def("print", &pyABM::print)
 									.def("generate_path", &pyABM::generate_path)
 									.def("generate_stock_price", &pyABM::generate_stock_price)
+									.def("getStockPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.stocks; })
 									.def("write_csv", &pyABM::write_csv);
 	// py::class_<pyAthenaAutocallable>(m, "pricepath").def("price_path", &pyAthenaAutocallable::price_path);
 	// py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def("check_terminations", &check_terminations);

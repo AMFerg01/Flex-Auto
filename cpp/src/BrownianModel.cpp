@@ -134,3 +134,88 @@ void ArithmeticBrownianModel::write_csv(std::string filename, std::vector<data_c
    // Close the file
    my_file.close();
 }
+
+
+GeometricBrownianModel::GeometricBrownianModel(
+	// asset related.
+	float drift,
+	float volatility,
+	float spot_price,
+	float maturity,
+	float step_size,
+	uint16_t number_of_steps,
+	std::vector<float> & wiener_process,
+	std::vector<float> & paths,
+	std::vector<float> & stocks) {
+
+		this->drift = drift;
+		this->volatility = volatility;
+		this->spot_price = spot_price;
+		this->maturity = maturity;
+		this->step_size = step_size;
+		this->number_of_steps = number_of_steps;
+		this->wiener_process = wiener_process;
+		this->paths = paths;
+		this->stocks = stocks;
+
+}
+
+void GeometricBrownianModel::generate_path(void) {
+
+	// declare iterators.
+	auto wiener_iter = this->wiener_process.begin();
+	auto paths_iter = this->paths.begin();
+
+	*paths_iter = std::log(this->spot_price);
+	paths_iter++;
+
+	// generate the wiener process.
+	for(; wiener_iter != this->wiener_process.end(); wiener_iter++)
+	{
+		*wiener_iter = standard_normal(generator);
+	}
+	wiener_iter = this->wiener_process.begin();
+
+
+	float S_t, S_tp1, mu, W_t, sigma; 
+
+	// generate brownian motion path.
+	for(; paths_iter != this->paths.end(); paths_iter++) {
+
+		// for readability only 
+		S_t = *(paths_iter-1); 
+		S_tp1 = *(paths_iter); 
+		mu = drift; 
+		sigma = volatility; 
+		W_t = *wiener_iter;
+
+		S_tp1 = S_t * expf( (drift *  - sigma * sigma * 0.5) * step_size + sigma * sqrtf(step_size) * W_t ); 
+
+		// allocate results. 
+		*paths_iter = S_tp1; 
+		wiener_iter++; 
+
+	}
+
+}
+
+
+void GeometricBrownianModel::generate_stock_price(void) {
+	generate_path();
+	this->stocks = this->paths;
+}
+
+
+void GeometricBrownianModel::print(void) {
+	  std::cout << "Geometric Brownian Model \n"
+	  << "{ \n"
+	  << "drift: " << this->drift << "\n"
+	  << "volatility: " << this->volatility << "\n"
+	  << "spot_price: " << this->spot_price << "\n"
+	  << "maturity: " << this->maturity << "\n"
+	  << "step_size: " << this->step_size << "\n"
+	  << "wiener_process: " << "size[" << this->wiener_process.size() << "]" << "capacity[" << this->wiener_process.capacity() << "]"  << "\n"
+	  << "paths: " << "size[" << this->paths.size() << "]" << "capacity[" << this->paths.capacity() << "]" << "\n"
+	  << "stocks: " << "size[" << this->stocks.size() << "]" << "capacity[" << this->stocks.capacity() << "]"  "\n"
+	  << "} \n";
+  }
