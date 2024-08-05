@@ -7,7 +7,7 @@
 #define data_column std::pair<std::string, std::vector<float>>
 
 #pragma once
-class GeometricBrownianModel {
+class ArithmeticBrownianModel {
 public:
   // asset related
   float drift, volatility, spot_price;
@@ -19,13 +19,13 @@ public:
   // indexed values.
   std::vector<float> wiener_process, paths, stocks;
 
-  GeometricBrownianModel(float drift, float volatility, float spot_price,
+  ArithmeticBrownianModel(float drift, float volatility, float spot_price,
                          float maturity, float step_size,
                          uint16_t number_of_steps,
                          std::vector<float> &wiener_process,
                          std::vector<float> &paths, std::vector<float> &stocks);
 
-  ~GeometricBrownianModel();
+  ~ArithmeticBrownianModel();
 
   void print(void);
   void generate_path(void);

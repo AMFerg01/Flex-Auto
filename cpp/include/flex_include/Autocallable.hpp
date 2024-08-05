@@ -3,7 +3,7 @@
 #include <optional> 
 #include <string> 
 #include <cstddef>
-#include "GeometricBrownianModel.hpp"
+#include "BrownianModel.hpp"
 
 
 /* -- AthenaResult class
@@ -117,13 +117,13 @@ public:
     **/
     void preliminary_checks(void);
 
-    AthenaResult price_gbm(GeometricBrownianModel &gbm);
+    AthenaResult price_abm(ArithmeticBrownianModel &abm);
     void check_ordering_of_barriers(void);
 
     std::optional<AthenaResult> check_terminations(int i,
                                               int index,
                                               std::vector<float> stock_normalized,
-                                              GeometricBrownianModel gbm,
+                                              ArithmeticBrownianModel abm,
                                               bool maturity);
 };
 
@@ -135,7 +135,7 @@ public:
             stock_normalized[index] < self.exit_barrier
         ):
 
-            price = gbm.stocks[0] * (
+            price = abm.stocks[0] * (
                 self.autocall_value + self.coupon_value * (i + 1)
             )  # set price to autocall and number of coupons
             result.termination_status = f"ac-barrier-{i+1}"
@@ -144,14 +144,14 @@ public:
 
         # check if exit is triggered
         if stock_normalized[index] >= self.exit_barrier:
-            price = gbm.stocks[index] * (1.0 + self.coupon_value * (i + 1))
+            price = abm.stocks[index] * (1.0 + self.coupon_value * (i + 1))
             result.termination_status = f"exit-barrier-{i+1}"
             result.underlying_path = result.underlying_path[: result.terminating_index]
             result.price = price
 
         # check if kill barrier is triggered
         if stock_normalized[index] <= self.kill_barrier:
-            price = gbm.stocks[0] * self.kill_value
+            price = abm.stocks[0] * self.kill_value
             result.termination_status = f"kill-barrier-{i+1}"
             result.underlying_path = result.underlying_path[: result.terminating_index]
             result.price = price
@@ -161,7 +161,7 @@ public:
             stock_normalized[index] < self.autocall_barrier
         ):
             if maturity:
-                price = gbm.stocks[0]
+                price = abm.stocks[0]
                 result.termination_status = "maturity"
                 result.price = price
 

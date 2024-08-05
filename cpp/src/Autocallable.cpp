@@ -1,5 +1,4 @@
 #include "Autocallable.hpp"
-#include "GeometricBrownianModel.hpp"
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -189,7 +188,7 @@ void AthenaAutocallable::check_ordering_of_barriers()
 std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
                                                                    int index,
                                                                    std::vector<float> stock_normalized,
-                                                                   GeometricBrownianModel gbm,
+                                                                   ArithmeticBrownianModel abm,
                                                                    bool maturity)
 {
 
@@ -203,8 +202,8 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       this->autocall_value,
       this->coupon_value,
       this->kill_value,
-      gbm.stocks[0], // inception_spot
-      gbm.stocks     // underlying_path
+      abm.stocks[0], // inception_spot
+      abm.stocks     // underlying_path
   );
 
   // Note: If you need to set the 'price' to infinity, you should do it separately as it isn't passed in the constructor.
@@ -219,7 +218,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
 
     // price is calculated as stock initial * (AC_VALUE + number of coupons added)
     float coupon_multiplier = this->coupon_value * (i + 1);
-    price = gbm.stocks[0] * (this->autocall_value + coupon_multiplier);
+    price = abm.stocks[0] * (this->autocall_value + coupon_multiplier);
     result.price = price;
     this->termination_status = std::string("AC + COUPON");
     result.termination_status = this->termination_status;
@@ -229,7 +228,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   // EXIT CHECK
   if (stock_normalized[index] >= this->exit_barrier)
   {
-    price = gbm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
+    price = abm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
     result.price = price;
     this->termination_status = std::string("EXIT + COUPON");
     result.termination_status = this->termination_status;
@@ -238,7 +237,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   // KILL CHECK
   if (stock_normalized[index] <= this->kill_barrier)
   {
-    price = gbm.stocks[0] * this->kill_value;
+    price = abm.stocks[0] * this->kill_value;
     result.price = price;
     this->termination_status = std::string("KILL");
     result.termination_status = this->termination_status;
@@ -252,7 +251,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     // check maturity condition.
     if (maturity)
     {
-      price = gbm.stocks[0];
+      price = abm.stocks[0];
       result.price = price;
       this->termination_status = std::string("MATURITY");
       result.termination_status = this->termination_status;
@@ -281,7 +280,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   }
 }
 
-AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
+AthenaResult AthenaAutocallable::price_abm(ArithmeticBrownianModel &abm)
 {
 
   float price = INFINITY;
@@ -290,36 +289,36 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
                              this->autocall_barrier,
                              this->exit_barrier,
                              this->kill_barrier,
-                             gbm.maturity,
+                             abm.maturity,
                              this->observation_dates,
                              this->autocall_value,
                              this->autocall_value, //  coupon value is also autocall value
                              this->kill_value,
                              this->inception_spot,
-                             gbm.stocks);
+                             abm.stocks);
 
   result.price = price;
 
   // Normalize stock prices
 
-  std::vector<float> stock_normalized(gbm.stocks.size());
+  std::vector<float> stock_normalized(abm.stocks.size());
   
-  for (size_t i = 0; i < gbm.stocks.size(); ++i)
+  for (size_t i = 0; i < abm.stocks.size(); ++i)
   {
-    stock_normalized[i] = gbm.stocks[i] / gbm.stocks[0];
+    stock_normalized[i] = abm.stocks[i] / abm.stocks[0];
   }
 
   // Calculate time steps
-  std::vector<float> time(gbm.number_of_steps + 1);
-  float time_step = gbm.maturity / gbm.number_of_steps;
-  for (size_t i = 0; i <= gbm.number_of_steps; ++i)
+  std::vector<float> time(abm.number_of_steps + 1);
+  float time_step = abm.maturity / abm.number_of_steps;
+  for (size_t i = 0; i <= abm.number_of_steps; ++i)
   {
     time[i] = i * time_step;
   }
 
   // Time index
-  std::vector<uint> time_index(gbm.number_of_steps + 1);
-  for (uint i = 0; i <= gbm.number_of_steps; ++i)
+  std::vector<uint> time_index(abm.number_of_steps + 1);
+  for (uint i = 0; i <= abm.number_of_steps; ++i)
   {
     time_index[i] = i;
   }
@@ -335,7 +334,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
   {
     for (size_t j = 0; j < time.size(); ++j)
     {
-      if (fabs(observation_dates[i] - time[j]) < gbm.step_size / 2)
+      if (fabs(observation_dates[i] - time[j]) < abm.step_size / 2)
       {
         obs_is_close[i] = true;
         observed_time_index.push_back((size_t)time_index[j]);
@@ -355,7 +354,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
         i,
         index,
         stock_normalized,
-        gbm,
+        abm,
         false // maturity
     );
 
@@ -385,7 +384,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
       this->observation_dates.size(), // i is the number of observation dates
       index,
       stock_normalized,
-      gbm,
+      abm,
       true // maturity
   );
 

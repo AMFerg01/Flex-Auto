@@ -1,5 +1,5 @@
 #include "../cpp/include/flex_include/Autocallable.hpp"
-#include "../cpp/include/flex_include/GeometricBrownianModel.hpp"
+#include "../cpp/include/flex_include/BrownianModel.hpp"
 #include "../cpp/include/flex_include/debug_utilities.hpp"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -12,9 +12,9 @@ public:
 	using AthenaAutocallable::AthenaAutocallable;
 };
 
-class pyGBM : public GeometricBrownianModel {
+class pyABM : public ArithmeticBrownianModel {
 public:
-	using GeometricBrownianModel::GeometricBrownianModel;
+	using ArithmeticBrownianModel::ArithmeticBrownianModel;
 };
 
 
@@ -36,7 +36,7 @@ PYBIND11_MODULE(flexauto, m) {
 																			float,
 																			float,
 																			float>())
-																.def("price_gbm", &pyAthenaAutocallable::price_gbm)
+																.def("price_abm", &pyAthenaAutocallable::price_abm)
 																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks);
 	
 	py::class_<AthenaResult>(m, "AthenaResult").def(py::init<float,
@@ -61,8 +61,8 @@ PYBIND11_MODULE(flexauto, m) {
 												.def("getMaturity", [](AthenaResult a) {return a.maturity;})
 												.def("getTerminationStatus",  [](AthenaResult a) {return a.termination_status;});
 
-	using base = GeometricBrownianModel;
-	py::class_<base>(m, "GBM").def(py::init<float,
+	using base = ArithmeticBrownianModel;
+	py::class_<base>(m, "ABM").def(py::init<float,
 												float,
 												float,
 												float,
@@ -71,10 +71,10 @@ PYBIND11_MODULE(flexauto, m) {
 												std::vector<float> &,
 												std::vector<float> &,
 												std::vector<float> &>())
-									.def("print", &pyGBM::print)
-									.def("generate_path", &pyGBM::generate_path)
-									.def("generate_stock_price", &pyGBM::generate_stock_price)
-									.def("write_csv", &pyGBM::write_csv);
+									.def("print", &pyABM::print)
+									.def("generate_path", &pyABM::generate_path)
+									.def("generate_stock_price", &pyABM::generate_stock_price)
+									.def("write_csv", &pyABM::write_csv);
 	// py::class_<pyAthenaAutocallable>(m, "pricepath").def("price_path", &pyAthenaAutocallable::price_path);
 	// py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def("check_terminations", &check_terminations);
 }

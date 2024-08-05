@@ -1,4 +1,4 @@
-#include "GeometricBrownianModel.hpp"
+#include "BrownianModel.hpp"
 #include <cmath>
 #include <cstdint>
 #include <fstream>
@@ -12,10 +12,10 @@ std::mt19937 generator{random_device()};
 std::normal_distribution<float> standard_normal{0.0,1.0};
 
 
-/* Geometric Brownian Model
-Model for generating paths using geometric brownian motion.
+/* Arithmetic Brownian Model
+Model for generating paths using Arithmetic brownian motion.
 */
-GeometricBrownianModel::GeometricBrownianModel(
+ArithmeticBrownianModel::ArithmeticBrownianModel(
 	// asset related.
 	float drift,
 	float volatility,
@@ -39,15 +39,15 @@ GeometricBrownianModel::GeometricBrownianModel(
 
 }
 
-GeometricBrownianModel::~GeometricBrownianModel() {
+ArithmeticBrownianModel::~ArithmeticBrownianModel() {
 };
 
 /* print
 
 Prints off the gbm experiment configuration.
 */
-void GeometricBrownianModel::print(void) {
-	  std::cout << "Geometric Brownian Model \n"
+void ArithmeticBrownianModel::print(void) {
+	  std::cout << "Arithmetic Brownian Model \n"
 	  << "{ \n"
 	  << "drift: " << this->drift << "\n"
 	  << "volatility: " << this->volatility << "\n"
@@ -63,7 +63,7 @@ void GeometricBrownianModel::print(void) {
 
 Generates a path using random normal draws from the standard library.
 */
-void GeometricBrownianModel::generate_path(void) {
+void ArithmeticBrownianModel::generate_path(void) {
 
 	// declare iterators.
 	auto wiener_iter = this->wiener_process.begin();
@@ -91,7 +91,7 @@ void GeometricBrownianModel::generate_path(void) {
 /* generate_stock_price
 Uses log-normal assumption to generate a path, then takes exponential.
 */
-void GeometricBrownianModel::generate_stock_price(void) {
+void ArithmeticBrownianModel::generate_stock_price(void) {
 	generate_path();
 	this->stocks = this->paths;
 	for(auto p = stocks.begin(); p!= stocks.end(); p++)
@@ -106,7 +106,7 @@ https://www.gormanalysis.com/blog/reading-and-writing-csv-files-with-cpp/
 , takes in a pair of string as filename,
 vector of data columns.
 */
-void GeometricBrownianModel::write_csv(std::string filename, std::vector<data_column> dataset)
+void ArithmeticBrownianModel::write_csv(std::string filename, std::vector<data_column> dataset)
 {
 
 	// Create an output filestream object
