@@ -22,10 +22,8 @@ ArithmeticBrownianModel::ArithmeticBrownianModel(
 	float spot_price,
 	float maturity,
 	float step_size,
-	uint16_t number_of_steps,
-	std::vector<float> & wiener_process,
-	std::vector<float> & paths,
-	std::vector<float> & stocks) {
+	uint16_t number_of_steps
+	) {
 
 		this->drift = drift;
 		this->volatility = volatility;
@@ -33,9 +31,10 @@ ArithmeticBrownianModel::ArithmeticBrownianModel(
 		this->maturity = maturity;
 		this->step_size = step_size;
 		this->number_of_steps = number_of_steps;
-		this->wiener_process = wiener_process;
-		this->paths = paths;
-		this->stocks = stocks;
+		std::vector<float> placeholder(number_of_steps, 1.0f);
+		this->wiener_process = placeholder;
+		this->paths = placeholder;
+		this->stocks = placeholder;
 		this->termination_index = (uint)0; 
 		this->path_to_termination = std::vector<float>({}); 
 
@@ -145,10 +144,7 @@ GeometricBrownianModel::GeometricBrownianModel(
 	float spot_price,
 	float maturity,
 	float step_size,
-	uint16_t number_of_steps,
-	std::vector<float> & wiener_process,
-	std::vector<float> & paths,
-	std::vector<float> & stocks) {
+	uint16_t number_of_steps) {
 
 		this->drift = drift;
 		this->volatility = volatility;
@@ -156,9 +152,10 @@ GeometricBrownianModel::GeometricBrownianModel(
 		this->maturity = maturity;
 		this->step_size = step_size;
 		this->number_of_steps = number_of_steps;
-		this->wiener_process = wiener_process;
-		this->paths = paths;
-		this->stocks = stocks;
+		std::vector<float> placeholder(number_of_steps, 1.0f);
+		this->wiener_process = placeholder;
+		this->paths = placeholder;
+		this->stocks = placeholder;
 		this->termination_index = (uint)0; 
 		this->path_to_termination = std::vector<float>({}); 
 }

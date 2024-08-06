@@ -23,9 +23,7 @@ public:
 
   ArithmeticBrownianModel(float drift, float volatility, float spot_price,
                          float maturity, float step_size,
-                         uint16_t number_of_steps,
-                         std::vector<float> &wiener_process,
-                         std::vector<float> &paths, std::vector<float> &stocks);
+                         uint16_t number_of_steps);
 
   ~ArithmeticBrownianModel();
 
@@ -54,9 +52,7 @@ public:
 
   GeometricBrownianModel(float drift, float volatility, float spot_price,
                          float maturity, float step_size,
-                         uint16_t number_of_steps,
-                         std::vector<float> &wiener_process,
-                         std::vector<float> &paths, std::vector<float> &stocks);
+                         uint16_t number_of_steps);
 
   ~GeometricBrownianModel();
 

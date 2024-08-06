@@ -73,10 +73,8 @@ PYBIND11_MODULE(flexauto, m) {
 												float,
 												float,
 												float,
-												uint16_t,
-												std::vector<float> &,
-												std::vector<float> &,
-												std::vector<float> &>())
+												uint16_t
+												>())
 									.def("print", &pyABM::print)
 									.def("generate_path", &pyABM::generate_path)
 									.def("generate_stock_price", &pyABM::generate_stock_price)
@@ -92,10 +90,8 @@ PYBIND11_MODULE(flexauto, m) {
 												float,
 												float,
 												float,
-												uint16_t,
-												std::vector<float> &,
-												std::vector<float> &,
-												std::vector<float> &>())
+												uint16_t
+												>())
 									.def("print", &pyGBM::print)
 									.def("generate_path", &pyGBM::generate_path)
 									.def("generate_stock_price", &pyGBM::generate_stock_price)

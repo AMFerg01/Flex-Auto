@@ -16,11 +16,7 @@ if __name__ == "__main__":
         "spot_price": 1.2,
         "maturity": 5.0,  # years
         "step_size": 0.01,
-        "number_of_steps": 1000,
-        "wiener_process": np.random.randn(1000),
-        "paths": np.random.randn(1000),
-        "stocks": np.ones(1000),        
-
+        "number_of_steps": 1000
     }
 
     athena_configuration = {
@@ -46,10 +42,8 @@ if __name__ == "__main__":
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
-        breakpoint()
 
         prices.append(result.getPrice())
-        # print(result.getPrice())
         results.append(result)
 
     print(prices)
