@@ -73,7 +73,8 @@ if __name__ == "__main__":
     prices = []
     statuses = []
     results = []
-    for i in range(10000):
+    
+    for i in range(100001):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
@@ -81,56 +82,29 @@ if __name__ == "__main__":
         prices.append(result.getPrice())
         results.append(result)
 
-    # plt.savefig("athena_prices.png")
-    # plt.clf()
-    # print("Plotting Maturity")
-    # athena_maturity_examples = [res for res in results if res.getTerminationStatus() == 'maturity']
-    # clean_dir('maturity')
-    # for i, result_example in enumerate(athena_maturity_examples):
-    #     plot_athena_result(result_example, "blue")
-    #     plt.savefig(f'maturity/athena_path_maturity_{i}_{result_example.getTerminationStatus()}.png', dpi=100)
-    #     plt.close()
-    #     plt.clf()
-    # athena_kill_barriers = [res for res in results if 'KILL' in res.getTerminationStatus()]
-    # print("Plotting kill")
-    # clean_dir('kill')
-    # for i, result_example in enumerate(athena_kill_barriers):
-    #     plot_athena_result(result_example, "red")
-    #     plt.savefig(f'kill/athena_path_kill_{i}_{result_example.getTerminationStatus()}.png', dpi=100)
-    #     plt.close()
-    #     plt.clf()
-    # print("Plotting AC")
-    # athena_ac_barriers = [res for res in results if 'AC + COUPON' in res.getTerminationStatus()]
-    # clean_dir('ac')
-    # for i, result_example in enumerate(athena_ac_barriers):
-    #     plot_athena_result(result_example, "black")
-    #     plt.savefig(f'ac/athena_path_ac_{i}_{result_example.getTerminationStatus()}.png', dpi=100)
-    #     plt.close()
-    #     plt.clf()   
-    # athena_exit_barriers = [res for res in results if 'EXIT + COUPON' in res.getTerminationStatus()]
-    # print("Plotting exits")
-    # clean_dir('exit')
-    # for i, result_example in enumerate(athena_exit_barriers):
-    #     plot_athena_result(result_example, "green")
-    #     plt.savefig(f'exit/athena_path_exit_{i}_{result_example.getTerminationStatus()}.png', dpi=100)
-    #     plt.close()
-    #     plt.clf()
+    num_paths = []
+    std_devs = []
+    means = []
+    for i in [100,1000,10000]:
+        a1 = np.mean(prices[0:i])
+        a1_std = np.std(prices[0:i]) / i
+        std_devs.append(a1_std)
+        num_paths.append(i)
+        means.append(a1)
 
-    a1 = sum([r.getPrice()/100 for r in results[:100]])
-    a2 = sum([r.getPrice()/1000 for r in results[:1000]])
-    a3 = sum([r.getPrice()/5000 for r in results[:5000]])
-    a4 = sum([r.getPrice()/10000 for r in results[:10000]])
-    avg_price = [a1, a2, a3, a4]
-    
-    s1 = statistics.stdev([r.getPrice() for r in results[:100]])
-    s2 = statistics.stdev([r.getPrice() for r in results[:1000]])
-    s3 = statistics.stdev([r.getPrice() for r in results[:5000]])
-    s4 = statistics.stdev([r.getPrice() for r in results[:10000]])
-    stds = [s1, s2, s3, s4]
-    plt.plot([100, 1000, 5000, 10000], stds)
+    plt.loglog(num_paths, std_devs)
     plt.title("Standard Deviation vs Number of Paths")
     plt.xscale("log")
     plt.yscale("log")
     plt.xlabel("Number of Paths")
     plt.ylabel("Standard Deviation")
     plt.savefig("stdev.png")
+    plt.clf() 
+
+    plt.plot(num_paths, means)
+    plt.title("Mean of Prices vs Number of Paths")
+    plt.xscale("log")
+    plt.xlabel("Number of Paths")
+    plt.ylabel("Average Price")
+    plt.savefig("mean.png")
+    plt.clf()
