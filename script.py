@@ -58,8 +58,8 @@ if __name__ == "__main__":
     }
 
     athena_configuration = {
-        "coupon_barrier": 1.0,
-        "autocall_barrier": 1.0,
+        "coupon_barrier": 1.1,
+        "autocall_barrier": 1.1,
         "autocall_value": 1.0,
         "exit_barrier": 1.2,
         "kill_barrier": 0.8,
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     results = []
     path_to_terms = [] 
     
-    for i in range(1000):
+    for i in range(100):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
@@ -86,45 +86,44 @@ if __name__ == "__main__":
         results.append(result)
         path_to_terms.append(gbm.getTermPath())
 
-    # plt.figure(figsize=(9.0,12.0))
+    plt.figure(figsize=(16,12))
 
-    # for result, term_path in zip(results, path_to_terms): 
-    #     status = result.getTerminationStatus()
-    #     # if status == "AC + COUPON":
-    #     #     plot_athena_result(result, color='black', term_path=term_path)
-    #     if status == 'KILL':
-    #         plot_athena_result(result, color = 'red', term_path=term_path)
-    #     # if status == 'EXIT + COUPON':
-    #     #     plot_athena_result(result, color = 'green', term_path=term_path)
-    #     if status == 'MATURITY':
-    #         print("HIT")
-    #         plot_athena_result(result, color = 'blue', term_path=term_path)
-    # plt.savefig('example.png')
+    for result, term_path in zip(results, path_to_terms): 
+        status = result.getTerminationStatus()
+        if status == "AC + COUPON":
+            plot_athena_result(result, color='black', term_path=term_path)
+        if status == 'KILL':
+            plot_athena_result(result, color = 'red', term_path=term_path)
+        if status == 'EXIT + COUPON':
+            plot_athena_result(result, color = 'green', term_path=term_path)
+        if status == 'MATURITY':
+            plot_athena_result(result, color = 'blue', term_path=term_path)
+    plt.savefig('example.png')
+    plt.clf()
+    num_paths = []
+    std_devs = []
+    means = []
+    for i in [100,1000,10000]:
+        a1 = np.mean(prices[0:i])
+        a1_std = np.std(prices[0:i]) / i
+        std_devs.append(a1_std)
+        num_paths.append(i)
+        means.append(a1)
 
-    # num_paths = []
-    # std_devs = []
-    # means = []
-    # for i in [100,1000,10000]:
-    #     a1 = np.mean(prices[0:i])
-    #     a1_std = np.std(prices[0:i]) / i
-    #     std_devs.append(a1_std)
-    #     num_paths.append(i)
-    #     means.append(a1)
+    plt.loglog(num_paths, std_devs)
+    plt.title("Standard Deviation vs Number of Paths")
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.xlabel("Number of Paths")
+    plt.ylabel("Standard Deviation")
+    plt.savefig("stdev.png")
+    plt.clf() 
 
-    # plt.loglog(num_paths, std_devs)
-    # plt.title("Standard Deviation vs Number of Paths")
-    # plt.xscale("log")
-    # plt.yscale("log")
-    # plt.xlabel("Number of Paths")
-    # plt.ylabel("Standard Deviation")
-    # plt.savefig("stdev.png")
-    # plt.clf() 
-
-    # plt.plot(num_paths, means)
-    # plt.title("Mean of Prices vs Number of Paths")
-    # plt.xscale("log")
-    # plt.xlabel("Number of Paths")
-    # plt.ylabel("Average Price")
-    # plt.savefig("mean.png")
-    # plt.clf()
+    plt.plot(num_paths, means)
+    plt.title("Mean of Prices vs Number of Paths")
+    plt.xscale("log")
+    plt.xlabel("Number of Paths")
+    plt.ylabel("Average Price")
+    plt.savefig("mean.png")
+    plt.clf()
 

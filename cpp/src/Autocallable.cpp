@@ -342,8 +342,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       (this->kill_barrier < stock_normalized[index]) &&
       (stock_normalized[index] < this->autocall_barrier))
   {
-    std::cout << "Hit " << std::endl; 
-    std::cout << maturity <<  std::endl;
+    
     // check maturity condition.
     if (maturity)
     {
@@ -584,13 +583,14 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
         false // maturity
     );
 
+
     // Continue if no termination value is returned
     if (!termination_value.has_value())
     {
       continue;
     }
 
-
+    
     // Check if the termination_value contains a valid AthenaResult
     if (termination_value)
     {
@@ -606,7 +606,6 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
 
   // Check at maturity
   int index = -1; // This indicates the end of the period, i.e., maturity
-
   // Call check_terminations for the maturity condition
   std::optional<AthenaResult> termination_at_maturity = this->check_terminations(
       this->observation_dates.size(), // i is the number of observation dates
@@ -628,6 +627,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
 
     gbm.termination_index = index; 
     gbm.path_to_termination = gbm.stocks; 
+    termination_at_maturity.value().termination_status = std::string("MATURITY");
     return termination_at_maturity.value();
   }
 
