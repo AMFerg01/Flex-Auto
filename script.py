@@ -98,6 +98,8 @@ if __name__ == "__main__":
             plot_athena_result(result, color = 'green', term_path=term_path)
         if status == 'MATURITY':
             plot_athena_result(result, color = 'blue', term_path=term_path)
+        del status 
+        
     plt.savefig('example.png')
     plt.clf()
     num_paths = []

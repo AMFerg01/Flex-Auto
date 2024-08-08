@@ -203,7 +203,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       this->coupon_value,
       this->kill_value,
       abm.stocks[0], // inception_spot
-      abm.stocks     // underlying_path
+      stock_normalized     // underlying_path
   );
 
   // Note: If you need to set the 'price' to infinity, you should do it separately as it isn't passed in the constructor.
@@ -297,7 +297,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       this->coupon_value,
       this->kill_value,
       gbm.stocks[0], // inception_spot
-      gbm.stocks     // underlying_path
+      stock_normalized     // underlying_path
   );
 
   // Note: If you need to set the 'price' to infinity, you should do it separately as it isn't passed in the constructor.
@@ -316,6 +316,9 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     result.price = price;
     this->termination_status = std::string("AC + COUPON");
     result.termination_status = this->termination_status;
+    return result;
+
+
 
   }
 
@@ -326,6 +329,8 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     result.price = price;
     this->termination_status = std::string("EXIT + COUPON");
     result.termination_status = this->termination_status;
+    return result;
+
   }
 
   // KILL CHECK
@@ -335,6 +340,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     result.price = price;
     this->termination_status = std::string("KILL");
     result.termination_status = this->termination_status;
+    return result;
 
   }
 
@@ -342,14 +348,16 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       (this->kill_barrier < stock_normalized[index]) &&
       (stock_normalized[index] < this->autocall_barrier))
   {
-    
+
     // check maturity condition.
     if (maturity)
     {
+
       price = gbm.stocks[0];
       result.price = price;
       this->termination_status = std::string("MATURITY");
       result.termination_status = this->termination_status;
+      return result;
 
     }
     else
@@ -476,7 +484,7 @@ AthenaResult AthenaAutocallable::price_abm(ArithmeticBrownianModel &abm)
   }
 
   // Check at maturity
-  int index = -1; // This indicates the end of the period, i.e., maturity
+  int index = stock_normalized.size() - 1; // This indicates the end of the period, i.e., maturity
 
   // Call check_terminations for the maturity condition
   std::optional<AthenaResult> termination_at_maturity = this->check_terminations(
@@ -605,7 +613,7 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
   }
 
   // Check at maturity
-  int index = -1; // This indicates the end of the period, i.e., maturity
+  int index = stock_normalized.size() - 1; // This indicates the end of the period, i.e., maturity
   // Call check_terminations for the maturity condition
   std::optional<AthenaResult> termination_at_maturity = this->check_terminations(
       this->observation_dates.size(), // i is the number of observation dates
@@ -627,7 +635,6 @@ AthenaResult AthenaAutocallable::price_gbm(GeometricBrownianModel &gbm)
 
     gbm.termination_index = index; 
     gbm.path_to_termination = gbm.stocks; 
-    termination_at_maturity.value().termination_status = std::string("MATURITY");
     return termination_at_maturity.value();
   }
 
