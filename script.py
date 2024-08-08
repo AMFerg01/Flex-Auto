@@ -11,19 +11,21 @@ def clean_dir(name):
         os.system(f"rm -rf {name}")
 
 
-def plot_athena_result(result: AthenaResult, color) -> None:
+def plot_athena_result(result: AthenaResult, color, term_path) -> None:
     """-- plots the result of an athena autocallable"""
     price = result.getPrice()
     title_str = (
         f"Athena Price {price:.2f} | Terminated: {result.getTerminationStatus()}"
     )
     stock_path = result.getUnderlyingPath()
-    time = np.linspace(0.0, result.getMaturity(), 1000)
+
+
+    time = np.linspace(0.0, (len(term_path)/1000) * result.getMaturity(), len(term_path))
     if time.shape[0] != stock_path[0]:
         stock_path = stock_path[0 : time.shape[0]]
 
     # plot underlying path
-    plt.plot(time, stock_path, color=color)
+    plt.plot(time, term_path, color=color)
     plt.title(title_str)
 
     # plot observation dates.
@@ -39,7 +41,7 @@ def plot_athena_result(result: AthenaResult, color) -> None:
 
     plt.xlabel("tte")
     plt.ylabel("spot")
-    plt.savefig('plot.png')
+    # plt.savefig('plot.png')
 
 if __name__ == "__main__":
     print("Running script")
@@ -70,41 +72,59 @@ if __name__ == "__main__":
 
     athena = AthenaAutocallable(*athena_configuration.values())
 
+
     prices = []
     statuses = []
     results = []
+    path_to_terms = [] 
     
-    for i in range(100001):
+    for i in range(1000):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
-
         prices.append(result.getPrice())
         results.append(result)
+        path_to_terms.append(gbm.getTermPath())
 
-    num_paths = []
-    std_devs = []
-    means = []
-    for i in [100,1000,10000]:
-        a1 = np.mean(prices[0:i])
-        a1_std = np.std(prices[0:i]) / i
-        std_devs.append(a1_std)
-        num_paths.append(i)
-        means.append(a1)
+    # plt.figure(figsize=(9.0,12.0))
 
-    plt.loglog(num_paths, std_devs)
-    plt.title("Standard Deviation vs Number of Paths")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("Number of Paths")
-    plt.ylabel("Standard Deviation")
-    plt.savefig("stdev.png")
-    plt.clf() 
+    # for result, term_path in zip(results, path_to_terms): 
+    #     status = result.getTerminationStatus()
+    #     # if status == "AC + COUPON":
+    #     #     plot_athena_result(result, color='black', term_path=term_path)
+    #     if status == 'KILL':
+    #         plot_athena_result(result, color = 'red', term_path=term_path)
+    #     # if status == 'EXIT + COUPON':
+    #     #     plot_athena_result(result, color = 'green', term_path=term_path)
+    #     if status == 'MATURITY':
+    #         print("HIT")
+    #         plot_athena_result(result, color = 'blue', term_path=term_path)
+    # plt.savefig('example.png')
 
-    plt.plot(num_paths, means)
-    plt.title("Mean of Prices vs Number of Paths")
-    plt.xscale("log")
-    plt.xlabel("Number of Paths")
-    plt.ylabel("Average Price")
-    plt.savefig("mean.png")
-    plt.clf()
+    # num_paths = []
+    # std_devs = []
+    # means = []
+    # for i in [100,1000,10000]:
+    #     a1 = np.mean(prices[0:i])
+    #     a1_std = np.std(prices[0:i]) / i
+    #     std_devs.append(a1_std)
+    #     num_paths.append(i)
+    #     means.append(a1)
+
+    # plt.loglog(num_paths, std_devs)
+    # plt.title("Standard Deviation vs Number of Paths")
+    # plt.xscale("log")
+    # plt.yscale("log")
+    # plt.xlabel("Number of Paths")
+    # plt.ylabel("Standard Deviation")
+    # plt.savefig("stdev.png")
+    # plt.clf() 
+
+    # plt.plot(num_paths, means)
+    # plt.title("Mean of Prices vs Number of Paths")
+    # plt.xscale("log")
+    # plt.xlabel("Number of Paths")
+    # plt.ylabel("Average Price")
+    # plt.savefig("mean.png")
+    # plt.clf()
+

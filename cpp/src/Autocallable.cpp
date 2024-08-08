@@ -241,9 +241,8 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     result.price = price;
     this->termination_status = std::string("KILL");
     result.termination_status = this->termination_status;
-
   }
-
+  
   if (
       (this->kill_barrier < stock_normalized[index]) &&
       (stock_normalized[index] < this->autocall_barrier))
@@ -343,6 +342,8 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
       (this->kill_barrier < stock_normalized[index]) &&
       (stock_normalized[index] < this->autocall_barrier))
   {
+    std::cout << "Hit " << std::endl; 
+    std::cout << maturity <<  std::endl;
     // check maturity condition.
     if (maturity)
     {
