@@ -75,9 +75,6 @@ def test_generate_json_dump(sample_athena_result):
     json_dump = sample_athena_result.generate_json_dump()
     assert isinstance(json_dump, str)
 
-# Not sure how to implement
-# def test_get_price(sample_athena_result):
-#     assert sample_athena_result.getPrice() == 
 
 def test_get_autocall_barrier(sample_athena_result):
     assert sample_athena_result.getAutocallBarrier() == 1.1
