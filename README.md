@@ -6,7 +6,7 @@ Currently features an Athena Autocallable product in continous time with a stand
 
 ## What are Autocallables?
 
-Autocallables are complex structured notes which track the trajectories of one or several underlying securities. On specific time points termed "observation dates", the autocallable may payout based on different conditions specified in the inception of the contract. There are numorous flavours of Autocallables which are bought and sold across financial instiutions worldwide. Flex-Auto serves as an open source tool for industry and academia to properly understand and analyze autocallable products.
+Autocallables are complex structured notes which track the trajectories of one or several underlying securities. On specific time points termed "observation dates", the autocallable may payout based on different conditions specified in the inception of the contract. There are numerous flavours of Autocallables which are bought and sold across financial instiutions worldwide. Flex-Auto serves as an open source tool for industry and academia to properly understand and analyze autocallable products.
 
 ## Installation
 
