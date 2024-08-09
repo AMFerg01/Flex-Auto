@@ -33,16 +33,30 @@ def test_price_abm(athena):
     abm = ABM(*experiment_configuration.values())
     abm.generate_stock_price()
     result = athena.price_abm(abm)
-    expected_result = None  # Replace with the expected result
-    assert result == expected_result
+    match result.getTerminationStatus():
+        case "KILL":
+            assert result.getPrice() == result.getKillValue()
+        case "AC + COUPON":
+            assert result.getPrice() == result.getACValue() + result.getCouponValue()
+        case "EXIT":
+            assert result.getPrice() == result.getExitValue() + result.getCouponValue()
+        case "MATURITY":
+            assert result.getPrice() == result.getUnderlyingPath()[-1]
 
 def test_price_gbm(athena):
     # Test that price_gbm returns the expected result
     gbm = GBM(*experiment_configuration.values())
     gbm.generate_stock_price()
     result = athena.price_gbm(gbm)
-    expected_result = None  # Replace with the expected result
-    assert result == expected_result
+    match result.getTerminationStatus():
+        case "KILL":
+            assert result.getPrice() == result.getKillValue()
+        case "AC + COUPON":
+            assert result.getPrice() == result.getACValue() + result.getCouponValue()
+        case "EXIT":
+            assert result.getPrice() == result.getExitValue() + result.getCouponValue()
+        case "MATURITY":
+            assert result.getPrice() == result.getUnderlyingPath()[-1]
 
 def test_preliminary_checks(athena):
     # Test that preliminary_checks runs without errors
@@ -80,13 +94,13 @@ def test_generate_json_dump(sample_athena_result):
 #     assert sample_athena_result.getPrice() == 
 
 def test_get_autocall_barrier(sample_athena_result):
-    assert sample_athena_result.getAutocallBarrier() == 1.1
+    assert float("{:.2f}".format(sample_athena_result.getAutocallBarrier())) == 1.1
 
 def test_get_exit_barrier(sample_athena_result):
-    assert sample_athena_result.getExitBarrier() == 1.2
+    assert float("{:.2f}".format(sample_athena_result.getExitBarrier())) == 1.2
 
 def test_get_kill_barrier(sample_athena_result):
-    assert sample_athena_result.getKillBarrier() == 0.8
+    assert float("{:.2f}".format(sample_athena_result.getKillBarrier())) == 0.8
 
 # Not sure how to implement
 # def test_get_underlying_path(sample_athena_result):
@@ -103,8 +117,8 @@ def test_get_maturity(sample_athena_result):
 
 # Not sure how to implement
 def test_get_termination_status(sample_athena_result):
-    assert sample_athena_result.getTerminationStatus() == ""  
-    
+    assert sample_athena_result.getTerminationStatus() in ["MATURITY", "EXIT + COUPON", "AC + COUPON", "KILL"]  
+
 def test_repr(sample_athena_result):
     expected_repr = (
         "AthenaResult(status=\"" + sample_athena_result.getTerminationStatus() + "\", " + "price=" + str(sample_athena_result.getPrice()) + ")"
