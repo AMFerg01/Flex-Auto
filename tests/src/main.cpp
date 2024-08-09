@@ -36,7 +36,7 @@ void test_gbm(void) {
 	paths.assign(number_of_steps, 0.0);
 	stocks.assign(number_of_steps, 0.0);
 
-	GeometricBrownianModel gbm = GeometricBrownianModel(drift, volatility, spot_price, maturity, step_size,
+	ArithmeticBrownianModel gbm = ArithmeticBrownianModel(drift, volatility, spot_price, maturity, step_size,
 		number_of_steps, wiener_process, paths, stocks);
 
 	gbm.generate_path();

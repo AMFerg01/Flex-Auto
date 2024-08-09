@@ -1,5 +1,5 @@
 #include "../cpp/include/flex_include/Autocallable.hpp"
-#include "../cpp/include/flex_include/GeometricBrownianModel.hpp"
+#include "../cpp/include/flex_include/BrownianModel.hpp"
 #include "../cpp/include/flex_include/debug_utilities.hpp"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -12,6 +12,11 @@ public:
 	using AthenaAutocallable::AthenaAutocallable;
 };
 
+class pyABM : public ArithmeticBrownianModel {
+public:
+	using ArithmeticBrownianModel::ArithmeticBrownianModel;
+};
+
 class pyGBM : public GeometricBrownianModel {
 public:
 	using GeometricBrownianModel::GeometricBrownianModel;
@@ -22,6 +27,8 @@ PYBIND11_MODULE(flexauto, m) {
 
 	// register excpetion here. 	
 	py::register_exception<BadAutocallParameterException>(m, "BadAutocallParameterException");
+	py::register_exception<BadAutocallError>(m, "BadAutocallError");
+
 
     m.doc() = "python wrappers for Flex-Auto"; // optional module docstring
 	py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def(py::init<float,
@@ -34,8 +41,20 @@ PYBIND11_MODULE(flexauto, m) {
 																			float,
 																			float,
 																			float>())
+																.def("price_abm", &pyAthenaAutocallable::price_abm)
 																.def("price_gbm", &pyAthenaAutocallable::price_gbm)
-																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks);
+																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks)
+																.def("check_terminations", py::overload_cast<int, int, std::vector<float>,
+																 											ArithmeticBrownianModel, bool>(&pyAthenaAutocallable::check_terminations))
+																.def("check_terminations", py::overload_cast<int, int, std::vector<float>,
+																 											GeometricBrownianModel, bool>(&pyAthenaAutocallable::check_terminations))
+																.def("__repr__", [](const pyAthenaAutocallable & a ) {
+																	return "AthenaAutocallable(exit=" + std::to_string(a.exit_barrier) + \
+																	", autocall=" + std::to_string(a.autocall_barrier) + \
+																	", coupon=" + std::to_string(a.coupon_barrier) + \
+																	", kill=" + std::to_string(a.kill_barrier) +")";
+																});
+	
 	
 	py::class_<AthenaResult>(m, "AthenaResult").def(py::init<float,
 															float,
@@ -56,22 +75,55 @@ PYBIND11_MODULE(flexauto, m) {
 												.def("getUnderlyingPath", [](AthenaResult a) {return a.underlying_path;})
 												.def("getObsDates", [](AthenaResult a) {return a.observation_dates;})
 												.def("getInceptionSpot", [](AthenaResult a) {return a.inception_spot;})
-												.def("getMaturity", [](AthenaResult a) {return a.maturity;});
+												.def("getMaturity", [](AthenaResult a) {return a.maturity;})
+												.def("getTerminationStatus",  [](AthenaResult a) {return a.termination_status;})
+												.def("__repr__", [](const AthenaResult &a) {
+													return "AthenaResult(status=\"" + a.termination_status + "\", " + "price=" + std::to_string(a.price) + ")";
+												});
 
-	using base = GeometricBrownianModel;
-	py::class_<base>(m, "GBM").def(py::init<float,
+	using base = ArithmeticBrownianModel;
+	py::class_<base>(m, "ABM").def(py::init<float,
 												float,
 												float,
 												float,
 												float,
-												uint16_t,
-												std::vector<float> &,
-												std::vector<float> &,
-												std::vector<float> &>())
+												uint16_t
+												>())
+									.def("print", &pyABM::print)
+									.def("generate_path", &pyABM::generate_path)
+									.def("generate_stock_price", &pyABM::generate_stock_price)
+									.def("getStockPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.stocks; })
+									.def("getTermIndex", [](const ArithmeticBrownianModel abm) -> uint { return abm.termination_index; })
+									.def("getTermPath", [](const ArithmeticBrownianModel abm) -> std::vector<float> { return abm.path_to_termination; })
+									.def("__repr__",
+											[](const ArithmeticBrownianModel &abm) {
+												return "ArithmeticBrownianModel(n=" + std::to_string(abm.number_of_steps) + ", " + "step_size=" + std::to_string(abm.step_size) +")";
+											}
+										)
+						// 		drift, float volatility, float spot_price,
+                        //  float maturity, float step_size,
+                        //  uint16_t number_of_step		
+									.def("write_csv", &pyABM::write_csv);
+
+
+	using base_geo = GeometricBrownianModel;
+	py::class_<base_geo>(m, "GBM").def(py::init<float,
+												float,
+												float,
+												float,
+												float,
+												uint16_t
+												>())
 									.def("print", &pyGBM::print)
 									.def("generate_path", &pyGBM::generate_path)
 									.def("generate_stock_price", &pyGBM::generate_stock_price)
+									.def("getStockPath", [](const GeometricBrownianModel gbm) -> std::vector<float> { return gbm.stocks; })
+									.def("getTermIndex", [](const GeometricBrownianModel gbm) -> uint { return gbm.termination_index; })
+									.def("getTermPath", [](const GeometricBrownianModel gbm) -> std::vector<float> { return gbm.path_to_termination; })
+									.def("__repr__",
+									[](const GeometricBrownianModel &gbm) {
+										return "GeometricBrownianModel(n=" + std::to_string(gbm.number_of_steps) + ", " + "step_size=" + std::to_string(gbm.step_size) +")";
+									}
+									)
 									.def("write_csv", &pyGBM::write_csv);
-	// py::class_<pyAthenaAutocallable>(m, "pricepath").def("price_path", &pyAthenaAutocallable::price_path);
-	// py::class_<pyAthenaAutocallable>(m, "AthenaAutocallable").def("check_terminations", &check_terminations);
 }

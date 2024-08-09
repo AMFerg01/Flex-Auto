@@ -1,7 +1,15 @@
 #include <exception>
 #include <vector>
 #include <optional> 
-#include "GeometricBrownianModel.hpp"
+#include <string> 
+#include <cstddef>
+#include "BrownianModel.hpp"
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+namespace py = pybind11;
+
+
 
 /* -- AthenaResult class
 contains the resultant information from a pricing call for athena autocall.
@@ -21,6 +29,7 @@ public:
     // underlying specific information.
     float inception_spot;
     std::vector<float> underlying_path;
+    std::string termination_status; 
 
     float price;
 
@@ -94,6 +103,7 @@ public:
     float kill_barrier;
     float maturity;
     float coupon_value, kill_value, inception_spot;
+    std::string termination_status; 
     std::vector<float> observation_dates;
 
     AthenaAutocallable(float coupon_barrier, float autocall_barrier,
@@ -112,8 +122,16 @@ public:
     **/
     void preliminary_checks(void);
 
-    AthenaResult price_gbm(GeometricBrownianModel &gbm);
+    AthenaResult price_abm(ArithmeticBrownianModel &abm);
+    AthenaResult price_gbm(GeometricBrownianModel &gbm); 
+
     void check_ordering_of_barriers(void);
+
+    std::optional<AthenaResult> check_terminations(int i,
+                                              int index,
+                                              std::vector<float> stock_normalized,
+                                              ArithmeticBrownianModel abm,
+                                              bool maturity);
 
     std::optional<AthenaResult> check_terminations(int i,
                                               int index,
@@ -121,50 +139,3 @@ public:
                                               GeometricBrownianModel gbm,
                                               bool maturity);
 };
-
-/*
-
-
-        # check if autocall is triggered
-        if (self.autocall_barrier <= stock_normalized[index]) and (
-            stock_normalized[index] < self.exit_barrier
-        ):
-
-            price = gbm.stocks[0] * (
-                self.autocall_value + self.coupon_value * (i + 1)
-            )  # set price to autocall and number of coupons
-            result.termination_status = f"ac-barrier-{i+1}"
-            result.underlying_path = result.underlying_path[: result.terminating_index]
-            result.price = price
-
-        # check if exit is triggered
-        if stock_normalized[index] >= self.exit_barrier:
-            price = gbm.stocks[index] * (1.0 + self.coupon_value * (i + 1))
-            result.termination_status = f"exit-barrier-{i+1}"
-            result.underlying_path = result.underlying_path[: result.terminating_index]
-            result.price = price
-
-        # check if kill barrier is triggered
-        if stock_normalized[index] <= self.kill_barrier:
-            price = gbm.stocks[0] * self.kill_value
-            result.termination_status = f"kill-barrier-{i+1}"
-            result.underlying_path = result.underlying_path[: result.terminating_index]
-            result.price = price
-
-        # check if nothing happens
-        if (self.kill_barrier < stock_normalized[index]) and (
-            stock_normalized[index] < self.autocall_barrier
-        ):
-            if maturity:
-                price = gbm.stocks[0]
-                result.termination_status = "maturity"
-                result.price = price
-
-            else:
-                return None
-
-        if result.price == inf:
-            raise NotImplementedError("User should not be here")
-        else:
-            return result
-*/

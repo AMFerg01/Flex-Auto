@@ -20,8 +20,8 @@ set(PROJECT_INCLUDE_DIR "include/flex_include")
 set(SOURCE_FILES
     ${PROJECT_INCLUDE_DIR}/Autocallable.hpp
     ${PROJECT_SOURCE_DIR}/Autocallable.cpp
-    ${PROJECT_INCLUDE_DIR}/GeometricBrownianModel.hpp
-    ${PROJECT_SOURCE_DIR}/GeometricBrownianModel.cpp
+    ${PROJECT_INCLUDE_DIR}/BrownianModel.hpp
+    ${PROJECT_SOURCE_DIR}/BrownianModel.cpp
     ${PROJECT_INCLUDE_DIR}/debug_utilities.hpp
 
     )
