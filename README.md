@@ -28,18 +28,18 @@ python3 -c 'import flexauto; print(flexauto)'
 
 ## Contributions
 
-- pybind11 wrapper, C++ extensions to Python, debugging, tests. Aidan Ferguson
-- model conception and development, C++ core implementation. Nik Pocuca
+- pybind11 wrapper, C++ extensions to Python, debugging, tests. [Aidan Ferguson](https://www.linkedin.com/in/aidan-m-ferguson/)
+- model conception and development, C++ core implementation. [Nik Pocuca](https://www.linkedin.com/in/pocucan/)
 
 ## Roadmap
 
-- [] Discounting with Interest.
-- [] Heston Model.
-- [] NVIDIA CUDA Kernel Extension.
-- [] AMD ROCm Kernel Extension.
-- [] Date schedules using QuantLib.
-- [] Best of basket.
-- [] Lookback effect.
+- [ ] Discounting with Interest
+- [ ] Heston Model
+- [ ] NVIDIA CUDA Kernel Extension
+- [ ] AMD ROCm Kernel Extension
+- [ ] Date schedules using QuantLib
+- [ ] Best of basket
+- [ ] Lookback effect
 
 ## Docker
 
