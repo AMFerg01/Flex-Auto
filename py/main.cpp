@@ -44,6 +44,10 @@ PYBIND11_MODULE(flexauto, m) {
 																.def("price_abm", &pyAthenaAutocallable::price_abm)
 																.def("price_gbm", &pyAthenaAutocallable::price_gbm)
 																.def("preliminary_checks", &pyAthenaAutocallable::preliminary_checks)
+																.def("check_terminations", py::overload_cast<int, int, std::vector<float>,
+																 											ArithmeticBrownianModel, bool>(&pyAthenaAutocallable::check_terminations))
+																.def("check_terminations", py::overload_cast<int, int, std::vector<float>,
+																 											GeometricBrownianModel, bool>(&pyAthenaAutocallable::check_terminations))
 																.def("__repr__", [](const pyAthenaAutocallable & a ) {
 																	return "AthenaAutocallable(exit=" + std::to_string(a.exit_barrier) + \
 																	", autocall=" + std::to_string(a.autocall_barrier) + \
