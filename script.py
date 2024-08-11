@@ -78,7 +78,7 @@ if __name__ == "__main__":
     results = []
     path_to_terms = [] 
     
-    for i in range(100):
+    for i in range(20):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
@@ -99,7 +99,14 @@ if __name__ == "__main__":
         if status == 'MATURITY':
             plot_athena_result(result, color = 'blue', term_path=term_path)
         del status 
-        
+    plt.title("Autocallable Example Paths")
+    plt.legend(handles=[
+    plt.Line2D([0], [0], color='black', lw=2, label='AUTOCALLED + COUPON'),
+    plt.Line2D([0], [0], color='red', lw=2, label='KILL'),
+    plt.Line2D([0], [0], color='green', lw=2, label='EXIT + COUPON'),
+    plt.Line2D([0], [0], color='blue', lw=2, label='MATURITY'),
+    plt.Line2D([0], [0], color='#1f77b4', lw=2, linestyle='--', label='OBSERVATION DATES')
+    ])    
     plt.savefig('example.png')
     plt.clf()
     num_paths = []

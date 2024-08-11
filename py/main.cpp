@@ -22,6 +22,10 @@ public:
 	using GeometricBrownianModel::GeometricBrownianModel;
 };
 
+class pyHBM : public HestonBrownianModel {
+public:
+	using HestonBrownianModel::HestonBrownianModel;
+};
 
 PYBIND11_MODULE(flexauto, m) {
 
@@ -102,9 +106,7 @@ PYBIND11_MODULE(flexauto, m) {
 												return "ArithmeticBrownianModel(n=" + std::to_string(abm.number_of_steps) + ", " + "step_size=" + std::to_string(abm.step_size) +")";
 											}
 										)
-						// 		drift, float volatility, float spot_price,
-                        //  float maturity, float step_size,
-                        //  uint16_t number_of_step		
+
 									.def("write_csv", &pyABM::write_csv);
 
 
@@ -128,4 +130,30 @@ PYBIND11_MODULE(flexauto, m) {
 									}
 									)
 									.def("write_csv", &pyGBM::write_csv);
+
+	using base_heston = HestonBrownianModel;
+	py::class_<base_heston>(m, "HBM").def(py::init<float, // drift 
+													float, //intial_volatility,
+													float, //theta,
+													float, //rho,
+													float, //kappa,
+													float, //ksi,
+													float, //spot_price,
+													float, //maturity, 
+													float, //step_size,
+													uint16_t //number_of_steps
+												>())
+									.def("print", &pyHBM::print)
+									.def("generate_path", &pyHBM::generate_path)
+									.def("generate_stock_price", &pyHBM::generate_stock_price)
+									.def("getStockPath", [](const HestonBrownianModel hbm) -> std::vector<float> { return hbm.stocks; })
+									.def("getTermIndex", [](const HestonBrownianModel hbm) -> uint { return hbm.termination_index; })
+									.def("getTermPath", [](const HestonBrownianModel hbm) -> std::vector<float> { return hbm.path_to_termination; })
+									.def("__repr__",
+									[](const HestonBrownianModel &hbm) {
+										return "HestonBrownianModel(n=" + std::to_string(hbm.number_of_steps) + ", " + "step_size=" + std::to_string(hbm.step_size) +")";
+									}
+									)
+									.def("write_csv", &pyHBM::write_csv);
+
 }
