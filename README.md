@@ -121,3 +121,11 @@ for i in range(100):
 price_at_maturity = np.mean(prices)
 print(f"Price is {price_at_maturity}")
 ```
+
+Here are some visuals of a few example paths generated: 
+
+
+![image](https://github.com/user-attachments/assets/d369bc0a-c8d2-4c7c-9338-9abd756e04e9)
+
+The blue paths are the asset trajectories that made it till maturity, the red lines are when the asset was observed below the kill barrier on a particular observation date. The green lines are when the underlying broke through the exit barrier, and finally the black lines are when the contract was autocalled. 
+Depending on the path taken, each payoff is calculated with respect to the observed date. 
