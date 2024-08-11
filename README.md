@@ -67,7 +67,7 @@ and you will be greeted with:
 (ubuntu-jammy) /home/app_user/app $: 
 ```
 
-Once the shell has been instantiated, see the section on [Installation](#installation) to built and install the python package.
+Once the shell has been instantiated, see the section on [Installation](#installation) to build and install the python package.
 
 ## Examples
 
