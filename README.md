@@ -8,6 +8,10 @@ Currently features an Athena Autocallable product in continous time with a stand
 
 Autocallables are complex structured notes which track the trajectories of one or several underlying securities. On specific time points termed "observation dates", the autocallable may payout based on different conditions specified in the inception of the contract. There are numerous flavours of Autocallables which are bought and sold across financial instiutions worldwide. Flex-Auto serves as an open source tool for industry and academia to properly understand and analyze autocallable products.
 
+## Codebase 
+
+Flex-Auto is maintained as a `pybind11` Python package, with the underlying source code written entirely in C++. The code follows idiomatic C++ practices, favoring the use of vectors and iterators, which provide both efficiency and safety, over more manual, C-like approaches to performance optimization. We chose to be more verbose for the Brownian Motion models to achieve clarity, over performance. 
+
 ## Installation
 
 This project uses cmake to build and facilitate the Python package `flexauto`. To install the library, run the following commands
