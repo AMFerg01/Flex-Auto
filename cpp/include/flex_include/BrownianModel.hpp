@@ -65,7 +65,8 @@ public:
 #pragma once 
 class HestonBrownianModel {
 
-// asset related
+public:
+  // asset related
   float drift, volatility, spot_price;
 
   // time related.
@@ -97,5 +98,6 @@ class HestonBrownianModel {
   void print(void);
   void generate_path(void);
   void generate_stock_price(void);
+  void write_csv(std::string filename, std::vector<data_column> dataset);
 
 };

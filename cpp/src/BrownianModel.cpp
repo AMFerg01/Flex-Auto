@@ -375,7 +375,7 @@ void HestonBrownianModel::generate_path(void)
 		S_tp1 = *(paths_iter);
 		mu = drift;
 		sigma = V_t;
-		S_tp1 = S_t * expf((drift * -sigma * sigma * 0.5) * step_size + sigma * sqrtf(step_size) * W_t);
+		S_tp1 = S_t * expf((drift * - sigma * sigma * 0.5) * step_size + sigma * sqrtf(step_size) * W_t);
 		*paths_iter = S_tp1;
 
 		wiener_iter++;
@@ -387,4 +387,36 @@ void HestonBrownianModel::generate_stock_price(void)
 {
 	generate_path();
 	this->stocks = this->paths;
+}
+
+
+void HestonBrownianModel::write_csv(std::string filename, std::vector<data_column> dataset)
+{
+
+	// Create an output filestream object
+	std::ofstream my_file = std::ofstream(filename);
+
+	// Send column names to the stream
+	for (int j = 0; j < dataset.size(); ++j)
+	{
+		my_file << dataset.at(j).first;
+		if (j != dataset.size() - 1)
+			my_file << ","; // No comma at end of line
+	}
+	my_file << "\n";
+
+	// Send data to the stream
+	for (int i = 0; i < dataset.at(0).second.size(); ++i)
+	{
+		for (int j = 0; j < dataset.size(); ++j)
+		{
+			my_file << dataset.at(j).second.at(i);
+			if (j != dataset.size() - 1)
+				my_file << ","; // No comma at end of line
+		}
+		my_file << "\n";
+	}
+
+	// Close the file
+	my_file.close();
 }
