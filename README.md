@@ -38,7 +38,7 @@ python3 -c 'import flexauto; print(flexauto)'
 ## Roadmap
 
 - [ ] Discounting with Interest
-- [ ] Heston Model
+- [ ] Heston Model [PR-7](https://github.com/AMFerg01/Flex-Auto/pull/7)
 - [ ] NVIDIA CUDA Kernel Extension
 - [ ] AMD ROCm Kernel Extension
 - [ ] Date schedules using QuantLib
