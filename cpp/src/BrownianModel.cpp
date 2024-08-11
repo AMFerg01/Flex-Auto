@@ -24,7 +24,6 @@ ArithmeticBrownianModel::ArithmeticBrownianModel(
 	float step_size,
 	uint16_t number_of_steps
 	) {
-		std::cout << "HIT: " << spot_price << std::endl;
 		this->drift = drift;
 		this->volatility = volatility;
 		this->spot_price = spot_price;
