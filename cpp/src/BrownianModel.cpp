@@ -21,23 +21,22 @@ ArithmeticBrownianModel::ArithmeticBrownianModel(
 	float spot_price,
 	float maturity,
 	float step_size,
-	uint16_t number_of_steps)
-{
-
-	this->drift = drift;
-	this->volatility = volatility;
-	this->spot_price = spot_price;
-	this->maturity = maturity;
-	this->step_size = step_size;
-	this->number_of_steps = number_of_steps;
-	std::vector<float> placeholder(number_of_steps, 1.0f);
-	this->wiener_process = placeholder;
-	this->paths = placeholder;
-	this->stocks = placeholder;
-	this->termination_index = (uint)0;
-	this->path_to_termination = std::vector<float>({});
-}
-
+	uint16_t number_of_steps
+	) {
+		this->drift = drift;
+		this->volatility = volatility;
+		this->spot_price = spot_price;
+		this->maturity = maturity;
+		this->step_size = step_size;
+		this->number_of_steps = number_of_steps;
+		std::vector<float> placeholder(number_of_steps, 1.0f);
+		std::vector<float> stocks(number_of_steps, spot_price);
+		this->wiener_process = placeholder;
+		this->paths = stocks;
+		this->stocks = stocks;
+		this->termination_index = (uint)0; 
+		this->path_to_termination = std::vector<float>({}); 
+  }
 ArithmeticBrownianModel::~ArithmeticBrownianModel() {
 };
 
