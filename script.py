@@ -86,6 +86,16 @@ if __name__ == "__main__":
         results.append(result)
         path_to_terms.append(gbm.getTermPath())
 
+        logPrices = np.log(gbm.getTermPath())
+        delta = np.diff(logPrices)
+        total_change = logPrices[-1] - logPrices[0]
+        vol2 = (-(total_change**2) / delta.size + np.sum(delta**2)) / 5
+        vol = np.sqrt(vol2)
+        drift = total_change / 5 + 0.5 * vol2
+        if (result.getTerminationStatus() == "MATURITY"):
+            print("expected vol: " + str(experiment_configuration['volatility']) + ", real vol: " + str(vol))
+            print("expected drift: " + str(experiment_configuration['drift']) + ", real drift: " + str(drift))
+
     plt.figure(figsize=(16,12))
 
     for result, term_path in zip(results, path_to_terms): 
