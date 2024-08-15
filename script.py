@@ -1,14 +1,39 @@
 from flexauto import AthenaAutocallable, ABM, GBM, AthenaResult
-
+import torch
+import torch.nn as nn 
+from torch.nn import Module
 import numpy as np
 import os
 import matplotlib.pyplot as plt
 import statistics
+import math
 def clean_dir(name):
     if not os.path.exists(name):
         os.mkdir(name)
     else:
         os.system(f"rm -rf {name}")
+
+def LE(params, T, St, S0):
+    mu = params[0]
+    sigma = params[1]
+    n = len(S0)
+    l = np.log(np.array(St)/np.array(S0))
+    value = - (n * T * sigma ** 2)/8 + (n * mu * T)/2 - (1/(2 * T * sigma ** 2)) * sum(l**2) + (mu/(sigma ** 2)) * sum(l) - (n * T * mu ** 2)/(2 * sigma ** 2)- (n * math.log(sigma)) 
+    return value
+
+def find_params(params, T, St, S0):
+    gd = torch.optim.SGD([params], lr=1e-3)
+    hist = []
+    for i in range(100000):
+        gd.zero_grad()
+        obj = -LE(params, T, St, S0)
+        obj.backward()
+        print("- log loss:" + str(obj.item()) + ", mu: " + str(params[0].item()) + ", sigma: " + str(params[1].item()))
+        if(i > 0 and hist[-1] - obj.item() < 1e-8 and hist[-1] - hist[-2] < 1e-8):
+            break
+        hist.append(obj.item())
+        gd.step()
+        
 
 
 def plot_athena_result(result: AthenaResult, color, term_path) -> None:
@@ -45,104 +70,108 @@ def plot_athena_result(result: AthenaResult, color, term_path) -> None:
 
 if __name__ == "__main__":
     print("Running script")
+    init_params = torch.tensor([1.0, 4.0], requires_grad=True)
+    find_params(init_params, 1, [60], [50])
 
-    riskfree_rate = 0.05
+    # riskfree_rate = 0.05
 
-    experiment_configuration = {
-        "drift": 0.05,
-        "volatility": 0.06,
-        "spot_price": 1.0,
-        "maturity": 5.0,  # years
-        "step_size": 0.01,
-        "number_of_steps": 1000
-    }
+    # experiment_configuration = {
+    #     "drift": 0.0,
+    #     "volatility": 0.1,
+    #     "spot_price": 50.0,
+    #     "maturity": 5.0,  # years
+    #     "step_size": 0.001,
+    #     "number_of_steps": 1000
+    # }
 
-    athena_configuration = {
-        "coupon_barrier": 1.1,
-        "autocall_barrier": 1.1,
-        "autocall_value": 1.0,
-        "exit_barrier": 1.2,
-        "kill_barrier": 0.8,
-        "maturity": experiment_configuration["maturity"],
-        "observation_dates": [1.0, 2.0, 3.0],
-        "coupon_value": 0.05,
-        "kill_value": 0.8,
-        "inception_spot": 1.0,
-    }
+    # athena_configuration = {
+    #     "coupon_barrier": 1.1,
+    #     "autocall_barrier": 1.1,
+    #     "autocall_value": 1.0,
+    #     "exit_barrier": 1.2,
+    #     "kill_barrier": 0.8,
+    #     "maturity": experiment_configuration["maturity"],
+    #     "observation_dates": [4.9],
+    #     "coupon_value": 0.05,
+    #     "kill_value": 0.8,
+    #     "inception_spot": 50.0,
+    # }
 
-    athena = AthenaAutocallable(*athena_configuration.values())
+    # athena = AthenaAutocallable(*athena_configuration.values())
 
 
-    prices = []
-    statuses = []
-    results = []
-    path_to_terms = [] 
-    
-    for i in range(20):
-        gbm = GBM(*experiment_configuration.values())
-        gbm.generate_stock_price()
-        result = athena.price_gbm(gbm)
-        prices.append(result.getPrice())
-        results.append(result)
-        path_to_terms.append(gbm.getTermPath())
+    # prices = []
+    # statuses = []
+    # results = []
+    # path_to_terms = [] 
+    # drifts = []
+    # vols = []
+    # for i in range(100000):
+    #     gbm = GBM(*experiment_configuration.values())
+    #     gbm.generate_stock_price()
+    #     result = athena.price_gbm(gbm)
+    #     prices.append(result.getPrice())
+    #     results.append(result)
+    #     path_to_terms.append(gbm.getTermPath())
 
-        logPrices = np.log(gbm.getTermPath())
-        delta = np.diff(logPrices)
-        total_change = logPrices[-1] - logPrices[0]
-        vol2 = (-(total_change**2) / delta.size + np.sum(delta**2)) / 5
-        vol = np.sqrt(vol2)
-        drift = total_change / 5 + 0.5 * vol2
-        if (result.getTerminationStatus() == "MATURITY"):
-            print("expected vol: " + str(experiment_configuration['volatility']) + ", real vol: " + str(vol))
-            print("expected drift: " + str(experiment_configuration['drift']) + ", real drift: " + str(drift))
+    #     logPrices = np.log(gbm.getTermPath())
+    #     delta = np.diff(logPrices)
+    #     total_change = logPrices[-1] - logPrices[0]
+    #     vol2 = (-(total_change**2) / delta.size + np.sum(delta**2)) / 5
+    #     vol = np.sqrt(vol2)
+    #     drift = total_change / 5 + 0.5 * vol2
+    #     vols.append(vol)
+    #     drifts.append(drift)
 
-    plt.figure(figsize=(16,12))
+    # print("expected vol: " + str(experiment_configuration['volatility']) + ", avg real vol: " + str(np.mean(vol)))
+    # print("expected drift: " + str(experiment_configuration['drift']) + ", avg real drift: " + str(np.mean(drift)))
+    # plt.figure(figsize=(16,12))
 
-    for result, term_path in zip(results, path_to_terms): 
-        status = result.getTerminationStatus()
-        if status == "AC + COUPON":
-            plot_athena_result(result, color='black', term_path=term_path)
-        if status == 'KILL':
-            plot_athena_result(result, color = 'red', term_path=term_path)
-        if status == 'EXIT + COUPON':
-            plot_athena_result(result, color = 'green', term_path=term_path)
-        if status == 'MATURITY':
-            plot_athena_result(result, color = 'blue', term_path=term_path)
-        del status 
-    plt.title("Autocallable Example Paths")
-    plt.legend(handles=[
-    plt.Line2D([0], [0], color='black', lw=2, label='AUTOCALLED + COUPON'),
-    plt.Line2D([0], [0], color='red', lw=2, label='KILL'),
-    plt.Line2D([0], [0], color='green', lw=2, label='EXIT + COUPON'),
-    plt.Line2D([0], [0], color='blue', lw=2, label='MATURITY'),
-    plt.Line2D([0], [0], color='#1f77b4', lw=2, linestyle='--', label='OBSERVATION DATES')
-    ])    
-    plt.savefig('example.png')
-    plt.clf()
-    num_paths = []
-    std_devs = []
-    means = []
-    for i in [100,1000,10000]:
-        a1 = np.mean(prices[0:i])
-        a1_std = np.std(prices[0:i]) / i
-        std_devs.append(a1_std)
-        num_paths.append(i)
-        means.append(a1)
+    # for result, term_path in zip(results, path_to_terms): 
+    #     status = result.getTerminationStatus()
+    #     if status == "AC + COUPON":
+    #         plot_athena_result(result, color='black', term_path=term_path)
+    #     if status == 'KILL':
+    #         plot_athena_result(result, color = 'red', term_path=term_path)
+    #     if status == 'EXIT + COUPON':
+    #         plot_athena_result(result, color = 'green', term_path=term_path)
+    #     if status == 'MATURITY':
+    #         plot_athena_result(result, color = 'blue', term_path=term_path)
+    #     del status 
+    # plt.title("Autocallable Example Paths")
+    # plt.legend(handles=[
+    # plt.Line2D([0], [0], color='black', lw=2, label='AUTOCALLED + COUPON'),
+    # plt.Line2D([0], [0], color='red', lw=2, label='KILL'),
+    # plt.Line2D([0], [0], color='green', lw=2, label='EXIT + COUPON'),
+    # plt.Line2D([0], [0], color='blue', lw=2, label='MATURITY'),
+    # plt.Line2D([0], [0], color='#1f77b4', lw=2, linestyle='--', label='OBSERVATION DATES')
+    # ])    
+    # plt.savefig('example.png')
+    # plt.clf()
+    # num_paths = []
+    # std_devs = []
+    # means = []
+    # for i in [100,1000,10000]:
+    #     a1 = np.mean(prices[0:i])
+    #     a1_std = np.std(prices[0:i]) / i
+    #     std_devs.append(a1_std)
+    #     num_paths.append(i)
+    #     means.append(a1)
 
-    plt.loglog(num_paths, std_devs)
-    plt.title("Standard Deviation vs Number of Paths")
-    plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel("Number of Paths")
-    plt.ylabel("Standard Deviation")
-    plt.savefig("stdev.png")
-    plt.clf() 
+    # plt.loglog(num_paths, std_devs)
+    # plt.title("Standard Deviation vs Number of Paths")
+    # plt.xscale("log")
+    # plt.yscale("log")
+    # plt.xlabel("Number of Paths")
+    # plt.ylabel("Standard Deviation")
+    # plt.savefig("stdev.png")
+    # plt.clf() 
 
-    plt.plot(num_paths, means)
-    plt.title("Mean of Prices vs Number of Paths")
-    plt.xscale("log")
-    plt.xlabel("Number of Paths")
-    plt.ylabel("Average Price")
-    plt.savefig("mean.png")
-    plt.clf()
+    # plt.plot(num_paths, means)
+    # plt.title("Mean of Prices vs Number of Paths")
+    # plt.xscale("log")
+    # plt.xlabel("Number of Paths")
+    # plt.ylabel("Average Price")
+    # plt.savefig("mean.png")
+    # plt.clf()
 
