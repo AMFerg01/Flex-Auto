@@ -7,31 +7,33 @@ import os
 import matplotlib.pyplot as plt
 import statistics
 import math
+import scipy
+from scipy.stats import lognorm
 def clean_dir(name):
     if not os.path.exists(name):
         os.mkdir(name)
     else:
         os.system(f"rm -rf {name}")
 
-def LE(params, T, St, S0):
-    mu = params[0]
-    sigma = params[1]
-    n = len(S0)
-    l = np.log(np.array(St)/np.array(S0))
-    value = - (n * T * sigma ** 2)/8 + (n * mu * T)/2 - (1/(2 * T * sigma ** 2)) * sum(l**2) + (mu/(sigma ** 2)) * sum(l) - (n * T * mu ** 2)/(2 * sigma ** 2) - (n * math.log(sigma)) 
-    return value
+# def LE(params, T, St, S0):
+#     mu = params[0]
+#     sigma = params[1]
+#     n = len(S0)
+#     l = np.log(np.array(St)/np.array(S0))
+#     value = - (n * T * sigma ** 2)/8 + (n * mu * T)/2 - (1/(2 * T * sigma ** 2)) * sum(l**2) + (mu/(sigma ** 2)) * sum(l) - (n * T * mu ** 2)/(2 * sigma ** 2) - (n * math.log(sigma)) 
+#     return value
 
-def find_params(params, T, St, S0):
-    gd = torch.optim.Adam([params], lr=1e-2, maximize=True)
-    hist = []
+# def find_params(params, T, St, S0):
+#     gd = torch.optim.Adam([params], lr=1e-2, maximize=True)
+#     hist = []
     
-    for i in range(100000):
-        gd.zero_grad()
-        obj = LE(params, T, St, S0) ### Maybe should be -LE?
-        obj.backward()
-        print("epoch: " + str(i) + ", LogL: " + str(obj.item()) + ", mu: " + str(params[0].item()) + ", sigma: " + str(params[1].item()))
-        hist.append(obj.item())
-        gd.step()
+    # for i in range(100000):
+    #     gd.zero_grad()
+    #     obj = LE(params, T, St, S0) ### Maybe should be -LE?
+    #     obj.backward()
+    #     print("epoch: " + str(i) + ", LogL: " + str(obj.item()) + ", mu: " + str(params[0].item()) + ", sigma: " + str(params[1].item()))
+    #     hist.append(obj.item())
+    #     gd.step()
         
 
 
@@ -74,8 +76,8 @@ if __name__ == "__main__":
     riskfree_rate = 0.05
 
     experiment_configuration = {
-        "drift": 0.1,
-        "volatility": 0.06,
+        "drift": 0.05,
+        "volatility": 0.07,
         "spot_price": 50.0,
         "maturity": 5.0,  # years
         "step_size": 0.001,
@@ -92,7 +94,7 @@ if __name__ == "__main__":
         "observation_dates": [1.0, 2.0, 3.0],
         "coupon_value": 0.05,
         "kill_value": 0.8,
-        "inception_spot": 50.0,
+        "inception_spot":501.0,
     }
 
     athena = AthenaAutocallable(*athena_configuration.values())
@@ -102,26 +104,38 @@ if __name__ == "__main__":
     statuses = []
     results = []
     path_to_terms = [] 
-    drifts = []
-    vols = []
+    values = []
+
     for i in range(100000):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
-        prices.append(gbm.getTermPath()[-1])
-        
+        if(gbm.getTermIndex() > 900):
+            prices.append(gbm.getTermPath()[-1])    
+        values.append(result.getPrice())
         results.append(result)
         path_to_terms.append(gbm.getTermPath())
-       
 
-    init_params = torch.tensor([0.4, 0.05], requires_grad=True)
-    find_params(init_params, 5, prices, np.repeat(50, 100000))
+    mu = experiment_configuration["drift"]
+    sigma = experiment_configuration["volatility"]
 
+
+    plt.hist(prices, bins=np.linspace(40, 100, 200), density=True)
+    plt.xscale("log")
+    a, b, c = lognorm.fit(prices)
+    real_pdf = scipy.stats.lognorm.pdf(np.linspace(40, 100, 200), a, b, c)
+    print(a, mu - (sigma ** 2)/2)
+    # exp_pdf = scipy.stats.lognorm.pdf(np.linspace(30, 100, 100), )
+    data = np.sort(prices)
+    plt.plot(np.linspace(40, 100, 200), real_pdf, 'r')
+    # plt.plot(np.linspace(30, 100, 100), exp_pdf, 'g')
+    plt.savefig("dist.png")
+    plt.clf()
     # plt.figure(figsize=(16,12))
 
     # for result, term_path in zip(results, path_to_terms): 
     #     status = result.getTerminationStatus()
-    #     if status == "AC + COUPON":
+    #     if status == "AC + COUPON": 
     #         plot_athena_result(result, color='black', term_path=term_path)
     #     if status == 'KILL':
     #         plot_athena_result(result, color = 'red', term_path=term_path)
