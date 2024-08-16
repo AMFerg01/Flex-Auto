@@ -312,7 +312,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
 
     // price is calculated as stock initial * (AC_VALUE + number of coupons added)
     float coupon_multiplier = this->coupon_value * (i + 1);
-    price = gbm.stocks[0] * (this->autocall_value + coupon_multiplier);
+    price = gbm.stocks[index] * (this->autocall_value + coupon_multiplier);
     result.price = price;
     this->termination_status = std::string("AC + COUPON");
     result.termination_status = this->termination_status;
@@ -336,7 +336,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   // KILL CHECK
   if (stock_normalized[index] <= this->kill_barrier)
   {
-    price = gbm.stocks[0] * this->kill_value;
+    price = gbm.stocks[index] * this->kill_value;
     result.price = price;
     this->termination_status = std::string("KILL");
     result.termination_status = this->termination_status;
@@ -353,7 +353,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
     if (maturity)
     {
 
-      price = gbm.stocks[0];
+      price = gbm.stocks[index];
       result.price = price;
       this->termination_status = std::string("MATURITY");
       result.termination_status = this->termination_status;

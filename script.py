@@ -18,19 +18,18 @@ def LE(params, T, St, S0):
     sigma = params[1]
     n = len(S0)
     l = np.log(np.array(St)/np.array(S0))
-    value = - (n * T * sigma ** 2)/8 + (n * mu * T)/2 - (1/(2 * T * sigma ** 2)) * sum(l**2) + (mu/(sigma ** 2)) * sum(l) - (n * T * mu ** 2)/(2 * sigma ** 2)- (n * math.log(sigma)) 
+    value = - (n * T * sigma ** 2)/8 + (n * mu * T)/2 - (1/(2 * T * sigma ** 2)) * sum(l**2) + (mu/(sigma ** 2)) * sum(l) - (n * T * mu ** 2)/(2 * sigma ** 2) - (n * math.log(sigma)) 
     return value
 
 def find_params(params, T, St, S0):
-    gd = torch.optim.SGD([params], lr=1e-3)
+    gd = torch.optim.Adam([params], lr=1e-2, maximize=True)
     hist = []
+    
     for i in range(100000):
         gd.zero_grad()
-        obj = -LE(params, T, St, S0)
+        obj = LE(params, T, St, S0) ### Maybe should be -LE?
         obj.backward()
-        print("- log loss:" + str(obj.item()) + ", mu: " + str(params[0].item()) + ", sigma: " + str(params[1].item()))
-        if(i > 0 and hist[-1] - obj.item() < 1e-8 and hist[-1] - hist[-2] < 1e-8):
-            break
+        print("epoch: " + str(i) + ", LogL: " + str(obj.item()) + ", mu: " + str(params[0].item()) + ", sigma: " + str(params[1].item()))
         hist.append(obj.item())
         gd.step()
         
@@ -70,61 +69,54 @@ def plot_athena_result(result: AthenaResult, color, term_path) -> None:
 
 if __name__ == "__main__":
     print("Running script")
-    init_params = torch.tensor([1.0, 4.0], requires_grad=True)
-    find_params(init_params, 1, [60], [50])
-
-    # riskfree_rate = 0.05
-
-    # experiment_configuration = {
-    #     "drift": 0.0,
-    #     "volatility": 0.1,
-    #     "spot_price": 50.0,
-    #     "maturity": 5.0,  # years
-    #     "step_size": 0.001,
-    #     "number_of_steps": 1000
-    # }
-
-    # athena_configuration = {
-    #     "coupon_barrier": 1.1,
-    #     "autocall_barrier": 1.1,
-    #     "autocall_value": 1.0,
-    #     "exit_barrier": 1.2,
-    #     "kill_barrier": 0.8,
-    #     "maturity": experiment_configuration["maturity"],
-    #     "observation_dates": [4.9],
-    #     "coupon_value": 0.05,
-    #     "kill_value": 0.8,
-    #     "inception_spot": 50.0,
-    # }
-
-    # athena = AthenaAutocallable(*athena_configuration.values())
 
 
-    # prices = []
-    # statuses = []
-    # results = []
-    # path_to_terms = [] 
-    # drifts = []
-    # vols = []
-    # for i in range(100000):
-    #     gbm = GBM(*experiment_configuration.values())
-    #     gbm.generate_stock_price()
-    #     result = athena.price_gbm(gbm)
-    #     prices.append(result.getPrice())
-    #     results.append(result)
-    #     path_to_terms.append(gbm.getTermPath())
+    riskfree_rate = 0.05
 
-    #     logPrices = np.log(gbm.getTermPath())
-    #     delta = np.diff(logPrices)
-    #     total_change = logPrices[-1] - logPrices[0]
-    #     vol2 = (-(total_change**2) / delta.size + np.sum(delta**2)) / 5
-    #     vol = np.sqrt(vol2)
-    #     drift = total_change / 5 + 0.5 * vol2
-    #     vols.append(vol)
-    #     drifts.append(drift)
+    experiment_configuration = {
+        "drift": 0.1,
+        "volatility": 0.06,
+        "spot_price": 50.0,
+        "maturity": 5.0,  # years
+        "step_size": 0.001,
+        "number_of_steps": 1000
+    }
 
-    # print("expected vol: " + str(experiment_configuration['volatility']) + ", avg real vol: " + str(np.mean(vol)))
-    # print("expected drift: " + str(experiment_configuration['drift']) + ", avg real drift: " + str(np.mean(drift)))
+    athena_configuration = {
+        "coupon_barrier": 1.1,
+        "autocall_barrier": 1.1,
+        "autocall_value": 1.0,
+        "exit_barrier": 1.2,
+        "kill_barrier": 0.8,
+        "maturity": experiment_configuration["maturity"],
+        "observation_dates": [1.0, 2.0, 3.0],
+        "coupon_value": 0.05,
+        "kill_value": 0.8,
+        "inception_spot": 50.0,
+    }
+
+    athena = AthenaAutocallable(*athena_configuration.values())
+
+
+    prices = []
+    statuses = []
+    results = []
+    path_to_terms = [] 
+    drifts = []
+    vols = []
+    for i in range(100000):
+        gbm = GBM(*experiment_configuration.values())
+        gbm.generate_stock_price()
+        result = athena.price_gbm(gbm)
+        prices.append(gbm.getTermPath()[-1])
+        
+        results.append(result)
+        path_to_terms.append(gbm.getTermPath())
+       
+
+    init_params = torch.tensor([0.4, 0.05], requires_grad=True)
+    find_params(init_params, 5, prices, np.repeat(50, 100000))
+
     # plt.figure(figsize=(16,12))
 
     # for result, term_path in zip(results, path_to_terms): 
