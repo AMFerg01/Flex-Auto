@@ -9,8 +9,7 @@ import matplotlib.pyplot as plt
 import statistics
 import math
 from tqdm import tqdm
-import scipy
-from scipy.stats import lognorm
+
 def clean_dir(name):
     if not os.path.exists(name):
         os.mkdir(name)
@@ -85,7 +84,7 @@ def run():
         "spot_price": 50.0,
         "maturity": 5.0,  # years
         "step_size": 0.001,
-        "number_of_steps": 1000
+        "number_of_steps": int(5.0 /  0.001)
     }
 
     athena_configuration = {
@@ -110,7 +109,7 @@ def run():
     path_to_terms = [] 
     values = []
 
-    for i in range(100000):
+    for i in range(10000):
         gbm = GBM(*experiment_configuration.values())
         gbm.generate_stock_price()
         result = athena.price_gbm(gbm)
@@ -121,8 +120,12 @@ def run():
 
     return prices
 
-
 x = torch.tensor(run())
+
+plt.hist(x.flatten(), 50)
+plt.savefig('prices')
+plt.clf()
+
 theta = torch.tensor([0.05, 0.07])
 def obj_function(theta: torch.tensor):
     mu = theta[0]
@@ -134,6 +137,10 @@ def obj_function(theta: torch.tensor):
 
     m = LogNormal(loc, scale)
     return -m.log_prob(x).sum()
+
+
+
+
 thetas_in_mu = []
 thetas_in_mu_example = torch.linspace(0.04,0.06,50)
 
@@ -145,7 +152,23 @@ for mu_ in thetas_in_mu_example:
 
 plt.plot(thetas_in_mu_example.flatten(), scores)
 plt.savefig('mle.png')
-theta = torch.tensor([0.05, 0.07])
+
+# exit()
+
+# thetas_in_mu = []
+# thetas_in_mu_example = torch.linspace(0.04,0.06,50)
+
+# scores = []
+
+# for mu_ in thetas_in_mu_example:
+#     thetas_in_mu.append(torch.tensor([mu_,theta[1]]))
+#     scores.append(obj_function(theta=thetas_in_mu[-1]))
+
+# plt.plot(thetas_in_mu_example.flatten(), scores)
+# plt.savefig('mle.png')
+
+
+
 
 log_like = obj_function(theta)
 mu = torch.tensor(0.01, requires_grad =True)
