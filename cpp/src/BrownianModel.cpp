@@ -374,7 +374,7 @@ void HestonBrownianModel::generate_path(void)
 		S_tp1 = *(paths_iter);
 		mu = drift;
 		sigma = V_t;
-		S_tp1 = S_t +  mu * S_t * step_size + sigma * S_t  * W_t * sqrtf(step_size);  // expf( (drift - sigma * sigma * 0.5) * step_size + sigma * sqrtf(step_size) * W_t);
+		S_tp1 = S_t +  mu * S_t * step_size + sigma * S_t  * W_t * sqrtf(step_size);
 
 		*paths_iter = S_tp1;
 
