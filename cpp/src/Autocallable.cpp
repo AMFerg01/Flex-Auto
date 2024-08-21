@@ -228,7 +228,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   // EXIT CHECK
   if (stock_normalized[index] >= this->exit_barrier)
   {
-    price = abm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
+    price = abm.stocks[0] * (1.0 + this->coupon_value * (i + 1));
     result.price = price;
     this->termination_status = std::string("EXIT + COUPON");
     result.termination_status = this->termination_status;
@@ -325,7 +325,7 @@ std::optional<AthenaResult> AthenaAutocallable::check_terminations(int i,
   // EXIT CHECK
   if (stock_normalized[index] >= this->exit_barrier)
   {
-    price = gbm.stocks[index] * (1.0 + this->coupon_value * (i + 1));
+    price = gbm.stocks[0] * (1.0 + this->coupon_value * (i + 1));
     result.price = price;
     this->termination_status = std::string("EXIT + COUPON");
     result.termination_status = this->termination_status;

@@ -3,7 +3,8 @@ from flexauto import AthenaAutocallable, ABM, GBM, AthenaResult
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-import statistics
+
+
 def clean_dir(name):
     if not os.path.exists(name):
         os.mkdir(name)
@@ -41,7 +42,6 @@ def plot_athena_result(result: AthenaResult, color, term_path) -> None:
 
     plt.xlabel("tte")
     plt.ylabel("spot")
-    # plt.savefig('plot.png')
 
 if __name__ == "__main__":
     print("Running script")
@@ -99,6 +99,7 @@ if __name__ == "__main__":
         if status == 'MATURITY':
             plot_athena_result(result, color = 'blue', term_path=term_path)
         del status 
+        
     plt.title("Autocallable Example Paths")
     plt.legend(handles=[
     plt.Line2D([0], [0], color='black', lw=2, label='AUTOCALLED + COUPON'),
@@ -135,4 +136,3 @@ if __name__ == "__main__":
     plt.ylabel("Average Price")
     plt.savefig("mean.png")
     plt.clf()
-

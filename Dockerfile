@@ -28,7 +28,10 @@ RUN apt-get install -y python3 python3-dev python3-pip
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 
 # Install Python packages
-RUN pip install pybind11[global] numpy==2.0.1 matplotlib
+RUN pip install pybind11[global] numpy==2.0.1 matplotlib tqdm
+
+# validation installs
+RUN pip install torch==2.3.1 --index-url https://download.pytorch.org/whl/cpu
 
 RUN apt-get update
 
