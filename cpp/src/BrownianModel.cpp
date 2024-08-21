@@ -194,7 +194,7 @@ void GeometricBrownianModel::generate_path(void)
 		sigma = volatility;
 		W_t = *wiener_iter;
 
-		S_tp1 = S_t +  mu * S_t * step_size + sigma * S_t  * W_t * sqrtf(step_size);  // expf( (drift - sigma * sigma * 0.5) * step_size + sigma * sqrtf(step_size) * W_t);
+		S_tp1 = S_t +  mu * S_t * step_size + sigma * S_t  * W_t * sqrtf(step_size); 
 
 		// allocate results.
 		*paths_iter = S_tp1;
